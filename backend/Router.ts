@@ -1,17 +1,15 @@
 import { RequestHandler, Router } from 'express'
-import { ChatBot, ChatBotRecord } from '../types/ChatBot'
-import {getDatabase} from './utils/mongodb'
+import { ChatBot } from '../types/ChatBot'
+import { getDatabase } from './utils/mongodb'
 import { ObjectId } from 'mongodb'
 
 const ChatBotRouter = Router()
 
-
 const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) => {
 	try {
 		const { model, name } = req.body
-
-        const db = getDatabase()
-        const collection = db.collection<ChatBot>('chatbot')
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
 		const result = await collection.insertOne({ model, name })
 
 		res
@@ -35,8 +33,8 @@ const handleGetChatbot: RequestHandler<{ id: string }> = async (req, res) => {
 		const { id } = req.params
 		const objectId = new ObjectId(id)
 
-        const db = getDatabase()
-        const collection = db.collection<ChatBot>('chatbot')
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
 		const result = await collection.findOne({ _id: objectId })
 		if (result) {
 			res.json(result)
@@ -59,9 +57,8 @@ const handleGetChatbot: RequestHandler<{ id: string }> = async (req, res) => {
 
 const handleGetChatbots: RequestHandler = async (req, res) => {
 	try {
-
-        const db = getDatabase()
-        const collection = db.collection<ChatBot>('chatbot')
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
 		const result = await collection.find({}).toArray()
 		if (result) {
 			res.json(result)
@@ -87,12 +84,12 @@ const handleUpdateChatbots: RequestHandler<{ id: string }, {}, ChatBot> = async 
 	res
 ) => {
 	const { id } = req.params
-    const objectId = new ObjectId(id)
+	const objectId = new ObjectId(id)
 	const { name, model } = req.body
 
-    const db = getDatabase()
-    const collection = db.collection<ChatBot>('chatbot')
-    const result = await collection.updateOne({_id: objectId}, {$set: {name, model}})
+	const db = getDatabase()
+	const collection = db.collection<ChatBot>('chatbot')
+	const result = await collection.updateOne({ _id: objectId }, { $set: { name, model } })
 
 	if (result.modifiedCount > 0) {
 		res.json({
@@ -107,11 +104,11 @@ const handleUpdateChatbots: RequestHandler<{ id: string }, {}, ChatBot> = async 
 
 const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, res) => {
 	const { id } = req.params
-    const objectId = new ObjectId(id)
+	const objectId = new ObjectId(id)
 
-    const db = getDatabase()
-    const collection = db.collection<ChatBot>('chatbot')
-	const result = await collection.deleteOne({_id: objectId})
+	const db = getDatabase()
+	const collection = db.collection<ChatBot>('chatbot')
+	const result = await collection.deleteOne({ _id: objectId })
 	if (result) {
 		res.json({
 			msg: 'Chatbot removed!!!',
