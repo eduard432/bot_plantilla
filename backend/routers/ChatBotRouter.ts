@@ -1,6 +1,6 @@
 import { RequestHandler, Router } from 'express'
 import { ChatBot } from '../types/ChatBot'
-import { getDatabase } from './utils/mongodb'
+import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
 
 const ChatBotRouter = Router()
@@ -11,7 +11,7 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 		const db = getDatabase()
 		const collection = db.collection<ChatBot>('chatbot')
 		const result = await collection.insertOne({ model, name, initialPrompt })
-
+ 
 		res
 			.json({
 				msg: 'Chatbot created',

@@ -1,9 +1,11 @@
+import { ObjectId } from "mongodb"
+
 export interface Message {
     role: string,
     content: string
 }
 
 export interface Chat {
-    chatBotId: string,
+    chatBotId: ObjectId,
     messages: Message[]
 }

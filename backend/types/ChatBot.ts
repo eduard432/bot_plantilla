@@ -1,10 +1,12 @@
+import { ObjectId, WithId } from 'mongodb'
+import { Chat } from './Chat'
+
 export interface ChatBot {
     name: string
     model: string
     initialPrompt: string
-    defaultChatId: string
+    defaultChatId?: ObjectId
+    chats?: ObjectId[]
 }
 
-export interface ChatBotRecord extends ChatBot {
-    _id: string;
-  }
+export type ChatBotRecord = WithId<ChatBot>
