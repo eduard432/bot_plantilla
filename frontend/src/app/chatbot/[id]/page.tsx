@@ -23,7 +23,7 @@ export default function EditPage() {
 	}, [])
 
 	const handleGetData = async (id: string) => {
-		const response = await fetch(`http://localhost:3000/chatbot/${params.id}`)
+		const response = await fetch(`${process.env.API_URL}/chatbot/${params.id}`)
 		if (response.ok) {
 			const data: ChatBotRecord = await response.json()
 			setChatBot(data)

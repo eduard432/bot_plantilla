@@ -29,7 +29,7 @@ const EditChatBotDialog: FC<{
 
 	const handleSaveData = async () => {
 		console.log({ chatBot })
-		const response = await fetch('http://localhost:3000/chatbot', {
+		const response = await fetch(`${process.env.API_URL}/chatbot`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
