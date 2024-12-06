@@ -44,11 +44,10 @@ const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> 
 			if (chatbotResult.modifiedCount > 0) {
 				res.json({
 					msg: 'Chat added!!!',
+					chatId: chatResult.insertedId
 				})
 			} else {
-				res.json({
-					msg: 'Error adding Chat!!',
-				})
+				throw Error('Error adding Chat!!')
 			}
 		} else {
 			throw Error('Unavilable to add chat')

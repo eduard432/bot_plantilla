@@ -28,7 +28,7 @@ export default function Home() {
   };
 
 
-  const deleteData = async (id: string) => {
+  const handleDeleteData = async (id: string) => {
     const response = await fetch("http://localhost:3000/chatbot/" + id, {
       method: "DELETE",
     });
@@ -43,6 +43,24 @@ export default function Home() {
       });
     }
   };
+
+  const handleChat = async (id:string, defaultChatId: string | undefined) => {
+    if(defaultChatId) {
+      router.push(`/chat?id=${defaultChatId}`)
+    } else {
+      const response = await fetch(`http://localhost:3000/chat/add/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({isDefault: true}),
+      })
+      if(response.ok) {
+        const data: {msg: string, chatId: string} = await response.json()
+        router.push(`/chat?id=${data.chatId}`)
+      }
+    }
+  }
 
   return (
     <>
@@ -59,7 +77,7 @@ export default function Home() {
           </button>
         </section>
         <section className="flex gap-4">
-          {data.map(({ model, name, _id }, i) => (
+          {data.map(({ model, name, _id, defaultChatId }, i) => (
             <div key={i} className="p-2 border rounded border-gray-300 min-w-48">
               <h2 className="text-xl font-semibold">{name}</h2>
               <p>Model: {model}</p>
@@ -67,10 +85,10 @@ export default function Home() {
                 <button className="text-sm bg-black text-white rounded p-2" onClick={() => router.push(`/chatbot/${_id}`)}>
                   <FaPencil />
                 </button>
-                <button className="text-sm bg-black text-white rounded p-2" onClick={() => deleteData(_id)}>
+                <button className="text-sm bg-black text-white rounded p-2" onClick={() => handleDeleteData(_id)}>
                   <FaRegTrashCan />
                 </button>
-                <button className="text-sm bg-black text-white rounded p-2" onClick={() => deleteData(_id)}>
+                <button className="text-sm bg-black text-white rounded p-2" onClick={() => handleChat(_id, defaultChatId)}>
                   <FaRegMessage />
                 </button>
               </div>

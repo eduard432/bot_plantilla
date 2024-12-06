@@ -11,7 +11,7 @@ import {
 	Textarea,
 } from '@headlessui/react'
 import React, { Dispatch, FC, SetStateAction, useState } from 'react'
-import { ChatBot, ChatBotRecord } from '../../../types/ChatBot'
+import { ChatBot, ChatBotRecord } from '@/types/ChatBot'
 
 const defaultChatBot: ChatBot = {
 	initialPrompt:
