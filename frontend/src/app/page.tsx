@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { ChatBot, ChatBotRecord } from "../../../types/ChatBot";
+import { ChatBotRecord } from "@/types/ChatBot";
 import { FaRegSquarePlus, FaRegTrashCan, FaPencil, FaRegMessage } from "react-icons/fa6";
 import { useRouter } from 'next/navigation'
 import EditChatBotDialog from "@/components/EditChatBotDialog";

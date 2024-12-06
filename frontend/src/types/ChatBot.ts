@@ -2,9 +2,10 @@ export interface ChatBot {
     name: string
     model: string
     initialPrompt: string
-    defaultChatId: string
+    defaultChatId?: string
+    chatsId?: string[]
 }
 
 export interface ChatBotRecord extends ChatBot {
-    _id: string;
-  }
+    _id: string
+}

@@ -1,7 +1,7 @@
 'use client'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ChatBotRecord } from '../../../../../types/ChatBot'
+import { ChatBotRecord } from '@/types/ChatBot'
 import { FaArrowLeft } from 'react-icons/fa6'
 import {
 	Field,

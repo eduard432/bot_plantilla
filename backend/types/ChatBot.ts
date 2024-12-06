@@ -5,5 +5,5 @@ export interface ChatBot {
     model: string
     initialPrompt: string
     defaultChatId?: ObjectId
-    chats?: ObjectId[]
+    chatsId?: ObjectId[]
 }
