@@ -7,10 +7,10 @@ const ChatBotRouter = Router()
 
 const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) => {
 	try {
-		const { model, name } = req.body
+		const { model, name, initialPrompt } = req.body
 		const db = getDatabase()
 		const collection = db.collection<ChatBot>('chatbot')
-		const result = await collection.insertOne({ model, name })
+		const result = await collection.insertOne({ model, name, initialPrompt })
 
 		res
 			.json({
@@ -85,11 +85,11 @@ const handleUpdateChatbots: RequestHandler<{ id: string }, {}, ChatBot> = async 
 ) => {
 	const { id } = req.params
 	const objectId = new ObjectId(id)
-	const { name, model } = req.body
+	const { name, model, initialPrompt } = req.body
 
 	const db = getDatabase()
 	const collection = db.collection<ChatBot>('chatbot')
-	const result = await collection.updateOne({ _id: objectId }, { $set: { name, model } })
+	const result = await collection.updateOne({ _id: objectId }, { $set: { name, model, initialPrompt } })
 
 	if (result.modifiedCount > 0) {
 		res.json({

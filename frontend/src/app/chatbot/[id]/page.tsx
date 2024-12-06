@@ -44,15 +44,15 @@ export default function EditPage() {
 					</Field>
 					<Field>
 						<Label className="">Modelo:</Label>
-						<Select className="mt-1 border border-gray-300 rounded px-2 py-1 mx-2" name="country">
+						<Select className="border border-gray-300 rounded px-2 py-1 mx-2" name="model">
 							<option>gpt-4o</option>
 							<option>gpt-4o-mini</option>
 							<option>gp4-3.5 Turbo</option>
 						</Select>
 					</Field>
 					<Field>
-						<Label className="block">Delivery notes</Label>
-						<Textarea className="mt-1 block" name="notes" />
+						<Label className="block">Initial Prompt:</Label>
+						<Textarea rows={4} className="resize-x mt-1 border border-gray-300 rounded px-2 py-1" name="initialPrompt" />
 					</Field>
 				</Fieldset>
 			)}
