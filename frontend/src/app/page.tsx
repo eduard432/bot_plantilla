@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 
 import { ChatBot, ChatBotRecord } from "../../../types/ChatBot";
-import { FaRegSquarePlus, FaRegTrashCan, FaPencil } from "react-icons/fa6";
+import { FaRegSquarePlus, FaRegTrashCan, FaPencil, FaRegMessage } from "react-icons/fa6";
 import { useRouter } from 'next/navigation'
+import EditChatBotDialog from "@/components/EditChatBotDialog";
 
 
 
@@ -26,19 +27,6 @@ export default function Home() {
     }
   };
 
-  const handleCreateData = async ({ model, name }: ChatBot) => {
-    const response = await fetch("http://localhost:3000/chatbot", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ model, name }),
-    });
-    if (response.ok) {
-      const data: { msg: string; id: string } = await response.json();
-      setData((rest) => [...rest, { model, name, _id: data.id }]);
-    }
-  };
 
   const deleteData = async (id: string) => {
     const response = await fetch("http://localhost:3000/chatbot/" + id, {
@@ -62,7 +50,8 @@ export default function Home() {
         <section className="my-4">
           <button
             onClick={() =>
-              handleCreateData({ model: "prueba", name: "test-1" })
+              // handleCreateData({ model: "prueba", name: "test-1", initialPrompt: "dsdsdsds" })
+              setIsOpen(true)
             }
             className="bg-black text-white rounded-md px-4 py-2"
           >
@@ -71,19 +60,25 @@ export default function Home() {
         </section>
         <section className="flex gap-4">
           {data.map(({ model, name, _id }, i) => (
-            <div key={i} className="p-2 border rounded border-gray-300">
+            <div key={i} className="p-2 border rounded border-gray-300 min-w-48">
               <h2 className="text-xl font-semibold">{name}</h2>
               <p>Model: {model}</p>
-              <button className="text-sm" onClick={() => deleteData(_id)}>
-                <FaRegTrashCan />
-              </button>
-              <button className="text-sm" onClick={() => router.push(`/chatbot/${_id}`)}>
-                <FaPencil />
-              </button>
+              <div className="mt-2 flex space-x-2" >
+                <button className="text-sm bg-black text-white rounded p-2" onClick={() => router.push(`/chatbot/${_id}`)}>
+                  <FaPencil />
+                </button>
+                <button className="text-sm bg-black text-white rounded p-2" onClick={() => deleteData(_id)}>
+                  <FaRegTrashCan />
+                </button>
+                <button className="text-sm bg-black text-white rounded p-2" onClick={() => deleteData(_id)}>
+                  <FaRegMessage />
+                </button>
+              </div>
             </div>
           ))}
         </section>
       </main>
+      <EditChatBotDialog isOpen={isOpen} setIsOpen={setIsOpen} setData={setData} />
     </>
   );
 }
