@@ -1,5 +1,4 @@
-import { ObjectId, WithId } from 'mongodb'
-import { Chat } from './Chat'
+import { ObjectId } from 'mongodb'
 
 export interface ChatBot {
     name: string
@@ -8,5 +7,3 @@ export interface ChatBot {
     defaultChatId?: ObjectId
     chats?: ObjectId[]
 }
-
-export type ChatBotRecord = WithId<ChatBot>
