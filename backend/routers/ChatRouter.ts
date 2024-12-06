@@ -3,6 +3,7 @@ import { Chat } from '../types/Chat'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId, UpdateFilter } from 'mongodb'
 import { ChatBot } from '../types/ChatBot'
+import { ChatGetInfo } from '../types/Api'
 
 const ChatRouter = Router()
 
@@ -62,6 +63,43 @@ const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> 
 	}
 }
 
+const handleGetChatInfo:RequestHandler<{id: string}> = async (req, res) => {
+	try {
+		const { id } = req.params
+		const chatObjectId = new ObjectId(id)
+		
+		const db = getDatabase()
+		const chatCollection = db.collection<Chat>('chat')
+		const chatBotCollection = db.collection<ChatBot>('chatbot')
+
+		const chatResult = await chatCollection.findOne({_id: chatObjectId})
+
+		if (chatResult){
+			const chatBotResult = await chatBotCollection.findOne({_id: chatResult.chatBotId})
+			if (chatBotResult) {
+				const result: ChatGetInfo = {
+					chatBot: chatBotResult,
+					messages: chatResult.messages
+				}
+				res.json(result)
+			}
+		} else {
+			res.json({
+				msg: 'Chat not founded'
+			}).status(404)
+		}
+
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
+	}
+}
+
+ChatRouter.get('/info/:id', handleGetChatInfo)
 ChatRouter.post('/add/:id', handleAddChat)
 
 export default ChatRouter

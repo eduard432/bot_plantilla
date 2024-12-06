@@ -20,16 +20,17 @@ export default function Home() {
   }, []);
 
   const handleGetData = async () => {
-    const response = await fetch(`${process.env.API_URL}/chatbot/all`);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/all`);
     if (response.ok) {
       const data: ChatBotRecord[] = await response.json();
+      console.log({data})
       setData(data);
     }
   };
 
 
   const handleDeleteData = async (id: string) => {
-    const response = await fetch(`${process.env.API_URL}/chatbot/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${id}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -48,7 +49,7 @@ export default function Home() {
     if(defaultChatId) {
       router.push(`/chat?id=${defaultChatId}`)
     } else {
-      const response = await fetch(`${process.env.API_URL}/chat/add/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/add/${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
