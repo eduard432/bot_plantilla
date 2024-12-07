@@ -11,12 +11,13 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 		const { model, name, initialPrompt } = req.body
 
 		const chatBotId = new ObjectId()
+		const chatId = new ObjectId()
 
 		const db = getDatabase()
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
 		const chatCollection = db.collection<Chat>('chat')
-		const chatBotResult = await chatBotCollection.insertOne({_id: chatBotId, model, name, initialPrompt })
-		await chatCollection.insertOne({chatBotId: chatBotId, messages: []})
+		const chatBotResult = await chatBotCollection.insertOne({_id: chatBotId, model, name, initialPrompt, defaultChatId: chatId })
+		await chatCollection.insertOne({_id:chatId, chatBotId: chatBotId, messages: []})
  
 		if(chatBotResult) {
 			res
