@@ -16,11 +16,14 @@ export default function Home() {
     handleGetData();
   }, []);
 
+  useEffect(() => {
+    console.log(data)
+  }, [data])
+
   const handleGetData = async () => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/all`);
     if (response.ok) {
       const data: ChatBotRecord[] = await response.json();
-      console.log({data})
       setData(data);
     }
   };

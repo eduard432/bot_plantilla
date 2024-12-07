@@ -28,7 +28,6 @@ const EditChatBotDialog: FC<{
 	const [chatBot, setChatBot] = useState<ChatBot>(defaultChatBot)
 
 	const handleSaveData = async () => {
-		console.log({ chatBot })
 		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot`, {
 			method: 'POST',
 			headers: {
@@ -37,8 +36,8 @@ const EditChatBotDialog: FC<{
 			body: JSON.stringify(chatBot),
 		})
 		if (response.ok) {
-			const data: { msg: string; id: string } = await response.json()
-			setData((rest) => [...rest, { ...chatBot, _id: data.id }])
+			const data: { msg: string; chatBot: ChatBotRecord } = await response.json()
+			setData((rest) => [...rest, data.chatBot])
 		}
         setIsOpen(false)
 	}

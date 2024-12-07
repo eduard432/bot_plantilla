@@ -16,14 +16,16 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 		const db = getDatabase()
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
 		const chatCollection = db.collection<Chat>('chat')
-		const chatBotResult = await chatBotCollection.insertOne({_id: chatBotId, model, name, initialPrompt, defaultChatId: chatId })
+
+		const chatBot = {_id: chatBotId, model, name, initialPrompt, defaultChatId: chatId }
+		const chatBotResult = await chatBotCollection.insertOne(chatBot)
 		await chatCollection.insertOne({_id:chatId, chatBotId: chatBotId, messages: []})
  
 		if(chatBotResult) {
 			res
 			.json({
 				msg: 'Chatbot created',
-				id: chatBotResult.insertedId,
+				chatBot: chatBot,
 			})
 			.status(201)
 		} else {
