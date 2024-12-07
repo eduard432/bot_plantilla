@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
 import { ChatBotRecord } from "@/types/ChatBot";
 import { FaRegSquarePlus, FaRegTrashCan, FaPencil, FaRegMessage } from "react-icons/fa6";
 import { useRouter } from 'next/navigation'
 import EditChatBotDialog from "@/components/EditChatBotDialog";
-
-
 
 export default function Home() {
   const [data, setData] = useState<ChatBotRecord[]>([]);
@@ -69,7 +66,6 @@ export default function Home() {
         <section className="my-4">
           <button
             onClick={() =>
-              // handleCreateData({ model: "prueba", name: "test-1", initialPrompt: "dsdsdsds" })
               setIsOpen(true)
             }
             className="bg-black text-white rounded-md px-4 py-2"
