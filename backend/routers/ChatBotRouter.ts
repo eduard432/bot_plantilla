@@ -2,22 +2,32 @@ import { RequestHandler, Router } from 'express'
 import { ChatBot } from '../types/ChatBot'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
+import { Chat } from '../types/Chat'
 
 const ChatBotRouter = Router()
 
 const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) => {
 	try {
 		const { model, name, initialPrompt } = req.body
+
+		const chatBotId = new ObjectId()
+
 		const db = getDatabase()
-		const collection = db.collection<ChatBot>('chatbot')
-		const result = await collection.insertOne({ model, name, initialPrompt })
+		const chatBotCollection = db.collection<ChatBot>('chatbot')
+		const chatCollection = db.collection<Chat>('chat')
+		const chatBotResult = await chatBotCollection.insertOne({_id: chatBotId, model, name, initialPrompt })
+		await chatCollection.insertOne({chatBotId: chatBotId, messages: []})
  
-		res
+		if(chatBotResult) {
+			res
 			.json({
 				msg: 'Chatbot created',
-				id: result.insertedId,
+				id: chatBotResult.insertedId,
 			})
 			.status(201)
+		} else {
+			throw Error('Error trying to create chatbot')
+		}
 	} catch (error) {
 		console.log(error)
 		res
