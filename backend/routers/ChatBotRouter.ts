@@ -3,6 +3,7 @@ import { ChatBot } from '../types/ChatBot'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
 import { Chat } from '../types/Chat'
+import { testMessages } from '../mock/mockData'
 
 const ChatBotRouter = Router()
 
@@ -19,7 +20,7 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 
 		const chatBot = {_id: chatBotId, model, name, initialPrompt, defaultChatId: chatId }
 		const chatBotResult = await chatBotCollection.insertOne(chatBot)
-		await chatCollection.insertOne({_id:chatId, chatBotId: chatBotId, messages: []})
+		await chatCollection.insertOne({_id:chatId, chatBotId: chatBotId, messages: testMessages})
  
 		if(chatBotResult) {
 			res
