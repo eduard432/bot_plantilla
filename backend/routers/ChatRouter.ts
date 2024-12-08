@@ -4,6 +4,8 @@ import { getDatabase } from '../utils/mongodb'
 import { ObjectId, UpdateFilter } from 'mongodb'
 import { ChatBot } from '../types/ChatBot'
 import { ChatGetInfo } from '../types/Api'
+import { generateText, streamText } from 'ai'
+import { openai } from '@ai-sdk/openai';
 
 const ChatRouter = Router()
 
@@ -99,7 +101,37 @@ const handleGetChatInfo:RequestHandler<{id: string}> = async (req, res) => {
 	}
 }
 
+const handleChat: RequestHandler<{}, {}, {id: string, message: string}> = async (req, res) => {
+	try {
+		const { id, message } = req.body
+		const objectId = new ObjectId(id)
+
+		const db = getDatabase()
+		const chatCollection = db.collection<Chat>('chat')
+		const chatResult = await chatCollection.findOne({_id: objectId})
+
+		if(!chatResult) throw Error('Error fetching messages')
+
+		const { messages } = chatResult
+
+		const result = streamText({
+			model: openai('gpt-3.5-turbo'),
+			messages
+		})
+
+		result.pipeDataStreamToResponse(res)
+
+	} catch (error) {
+		console.log(error)
+		res.json({
+			msg: 'Error'
+		})
+		.status(501)
+	}
+}
+
 ChatRouter.get('/info/:id', handleGetChatInfo)
 ChatRouter.post('/add/:id', handleAddChat)
+ChatRouter.post('/', handleChat)
 
 export default ChatRouter
