@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ChatBotRecord } from "@/types/ChatBot";
 import { FaRegSquarePlus, FaRegTrashCan, FaPencil, FaRegMessage } from "react-icons/fa6";
 import { useRouter } from 'next/navigation'
-import EditChatBotDialog from "@/components/EditChatBotDialog";
+import EditChatBotDialog from "@/components/CreateChatDialog";
 
 export default function Home() {
   const [data, setData] = useState<ChatBotRecord[]>([]);
@@ -76,7 +76,7 @@ export default function Home() {
             <FaRegSquarePlus />
           </button>
         </section>
-        <section className="flex gap-4">
+        <section className="grid grid-cols-4 gap-4">
           {data.map(({ model, name, _id, defaultChatId }, i) => (
             <div key={i} className="p-2 border rounded border-gray-300 min-w-48">
               <h2 className="text-xl font-semibold">{name}</h2>

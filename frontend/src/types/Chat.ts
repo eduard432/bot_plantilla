@@ -4,6 +4,10 @@ export interface Message {
     content: string
 }
 
+export interface MessageRecord extends Message {
+    _id: string
+}
+
 export interface Chat {
     chatBotId: string,
     messages: Message[]

@@ -2,31 +2,48 @@
 
 import { ChatGetInfo } from "@/types/Api";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FormEventHandler, KeyboardEventHandler, useEffect, useState } from "react";
+import {
+  KeyboardEventHandler,
+  useEffect,
+  useState,
+} from "react";
 import { FaArrowLeft, FaPaperPlane } from "react-icons/fa6";
-import { useChat } from 'ai/react';
-
+import { useChat } from "ai/react";
 
 export default function ChatPage() {
   const router = useRouter();
 
-  
   const [chatInfo, setChatInfo] = useState<ChatGetInfo>();
-  const [message, setMessage] = useState("");
-  
+
   const params = useSearchParams();
   const id = params.get("id");
-  
+
   if (!id) {
     return router.replace("/");
   }
 
-  const {messages, input, handleInputChange, handleSubmit: hS} = useChat()
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+  } = useChat({
+    api: `${process.env.NEXT_PUBLIC_API_URL}/chat`,
+    initialMessages: chatInfo?.messages.map(({ _id, ...rest }) => ({
+      id: _id,
+      ...rest,
+    })),
+    body: {id}
+  });
 
   useEffect(() => {
     getChatInfo();
     return setChatInfo(undefined);
   }, [id]);
+
+  useEffect(() => {
+    console.log({messages})
+  }, [messages])
 
   const getChatInfo = async () => {
     const response = await fetch(
@@ -36,22 +53,14 @@ export default function ChatPage() {
     setChatInfo(data);
   };
 
-  const handleSubmitKey: KeyboardEventHandler<HTMLTextAreaElement> = (event) => {
+  const handleSubmitKey: KeyboardEventHandler<HTMLTextAreaElement> = (
+    event
+  ) => {
     // Verifica si se presionaron Enter + Alt
     if (event.key === "Enter" && event.altKey) {
       event.preventDefault(); // Evita que se inserte una nueva línea en el textarea
-      handleSendMsg();
+      handleSubmit();
     }
-  };
-
-  const handleSubmit: FormEventHandler = async (event) => {
-    event.preventDefault();
-	handleSendMsg()
-  };
-
-  const handleSendMsg = () => {
-	console.log(message)
-	setMessage('')
   };
 
   return (
@@ -69,7 +78,7 @@ export default function ChatPage() {
           </p>
           <section className="rounded border border-gray-300 p-4 w-2/3 mx-auto h-full flex flex-col justify-between">
             <ul className="overflow-auto px-4 h-full">
-              {chatInfo.messages.map((message, i) => (
+              {messages.map((message, i) => (
                 <li
                   key={i}
                   className={`my-6 flex ${
@@ -93,11 +102,11 @@ export default function ChatPage() {
               className="rounded border border-gray-300 w-full flex"
             >
               <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
+                value={input}
+                onChange={handleInputChange}
                 placeholder="Escribe algo..."
                 className="w-full py-2 px-4 outline-none"
-			  	onKeyDown={handleSubmitKey}
+                onKeyDown={handleSubmitKey}
               />
               <button type="submit" className="px-4">
                 <FaPaperPlane />

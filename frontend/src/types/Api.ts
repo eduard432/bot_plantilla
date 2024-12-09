@@ -1,7 +1,7 @@
-import { Message } from "./Chat";
-import { ChatBot } from "./ChatBot";
+import { MessageRecord } from "./Chat";
+import { ChatBotRecord } from "./ChatBot";
 
 export interface ChatGetInfo {
-    chatBot: ChatBot
-    messages: Message[]
+    chatBot: ChatBotRecord
+    messages: MessageRecord[]
 }

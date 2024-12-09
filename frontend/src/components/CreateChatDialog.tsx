@@ -80,9 +80,10 @@ const EditChatBotDialog: FC<{
 								className="border border-gray-300 rounded px-2 py-1 mx-2"
 								name="model"
 							>
+								<option>gpt-3.5-turbo</option>
+								<option>gpt4-turbo</option>
+								<option>gpt-4</option>
 								<option>gpt-4o</option>
-								<option>gpt-4o-mini</option>
-								<option>gp4-3.5 Turbo</option>
 							</Select>
 						</Field>
 						<Field>

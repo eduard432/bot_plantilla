@@ -1,11 +1,11 @@
 import { RequestHandler, Router } from 'express'
-import { Chat } from '../types/Chat'
+import { Chat, Message } from '../types/Chat'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId, UpdateFilter } from 'mongodb'
 import { ChatBot } from '../types/ChatBot'
 import { ChatGetInfo } from '../types/Api'
-import { generateText, streamText } from 'ai'
-import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 
 const ChatRouter = Router()
 
@@ -47,7 +47,7 @@ const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> 
 			if (chatbotResult.modifiedCount > 0) {
 				res.json({
 					msg: 'Chat added!!!',
-					chatId: chatResult.insertedId
+					chatId: chatResult.insertedId,
 				})
 			} else {
 				throw Error('Error adding Chat!!')
@@ -65,32 +65,33 @@ const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> 
 	}
 }
 
-const handleGetChatInfo:RequestHandler<{id: string}> = async (req, res) => {
+const handleGetChatInfo: RequestHandler<{ id: string }> = async (req, res) => {
 	try {
 		const { id } = req.params
 		const chatObjectId = new ObjectId(id)
-		
+
 		const db = getDatabase()
 		const chatCollection = db.collection<Chat>('chat')
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
 
-		const chatResult = await chatCollection.findOne({_id: chatObjectId})
+		const chatResult = await chatCollection.findOne({ _id: chatObjectId })
 
-		if (chatResult){
-			const chatBotResult = await chatBotCollection.findOne({_id: chatResult.chatBotId})
+		if (chatResult) {
+			const chatBotResult = await chatBotCollection.findOne({ _id: chatResult.chatBotId })
 			if (chatBotResult) {
 				const result: ChatGetInfo = {
 					chatBot: chatBotResult,
-					messages: chatResult.messages
+					messages: chatResult.messages,
 				}
 				res.json(result)
 			}
 		} else {
-			res.json({
-				msg: 'Chat not founded'
-			}).status(404)
+			res
+				.json({
+					msg: 'Chat not founded',
+				})
+				.status(404)
 		}
-
 	} catch (error) {
 		console.log(error)
 		res
@@ -101,32 +102,50 @@ const handleGetChatInfo:RequestHandler<{id: string}> = async (req, res) => {
 	}
 }
 
-const handleChat: RequestHandler<{}, {}, {id: string, message: string}> = async (req, res) => {
+const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = async (
+	req,
+	res
+) => {
 	try {
-		const { id, message } = req.body
+		const { id, messages } = req.body
 		const objectId = new ObjectId(id)
 
 		const db = getDatabase()
 		const chatCollection = db.collection<Chat>('chat')
-		const chatResult = await chatCollection.findOne({_id: objectId})
+		const chatResult = await chatCollection.findOne({ _id: objectId })
 
-		if(!chatResult) throw Error('Error fetching messages')
+		if (!chatResult) throw Error('Error fetching messages')
 
-		const { messages } = chatResult
+		const chatBotCollection = db.collection<ChatBot>('chatbot')
+		const chatBotResult = await chatBotCollection.findOne({_id: chatResult.chatBotId})
+
+		if(!chatBotResult) throw Error('Error fetching chatbot settings')
 
 		const result = streamText({
-			model: openai('gpt-3.5-turbo'),
-			messages
+			model: openai(chatBotResult.model),
+			messages,
+			system: chatBotResult.initialPrompt,
+			onFinish: async ({text, response}) => {
+				console.log({response})
+				await chatCollection.updateOne(
+					{ _id: objectId },
+					{
+						$set: {
+							messages: [...messages, { role: 'assistant', content: text }],
+						},
+					}
+				)
+			},
 		})
 
 		result.pipeDataStreamToResponse(res)
-
 	} catch (error) {
 		console.log(error)
-		res.json({
-			msg: 'Error'
-		})
-		.status(501)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
 	}
 }
 
