@@ -3,6 +3,7 @@ import { ChatBot } from '../types/ChatBot'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
 import { Chat, Message } from '../types/Chat'
+import pickBy from 'lodash.pickby'
 
 const ChatBotRouter = Router()
 
@@ -17,18 +18,18 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
 		const chatCollection = db.collection<Chat>('chat')
 
-		const chatBot = {_id: chatBotId, model, name, initialPrompt, defaultChatId: chatId }
+		const chatBot = { _id: chatBotId, model, name, initialPrompt, defaultChatId: chatId }
 		const chatBotResult = await chatBotCollection.insertOne(chatBot)
 
-		await chatCollection.insertOne({_id:chatId, chatBotId: chatBotId, messages: []})
- 
-		if(chatBotResult) {
+		await chatCollection.insertOne({ _id: chatId, chatBotId: chatBotId, messages: [] })
+
+		if (chatBotResult) {
 			res
-			.json({
-				msg: 'Chatbot created',
-				chatBot: chatBot,
-			})
-			.status(201)
+				.json({
+					msg: 'Chatbot created',
+					chatBot: chatBot,
+				})
+				.status(201)
 		} else {
 			throw Error('Error trying to create chatbot')
 		}
@@ -97,22 +98,33 @@ const handleUpdateChatbots: RequestHandler<{ id: string }, {}, ChatBot> = async 
 	req,
 	res
 ) => {
-	const { id } = req.params
-	const objectId = new ObjectId(id)
-	const { name, model, initialPrompt } = req.body
+	try {
+		const { id } = req.params
+		const objectId = new ObjectId(id)
+		const { name, model, initialPrompt } = req.body
+		const updatedValues = pickBy({name, model, initialPrompt})
 
-	const db = getDatabase()
-	const collection = db.collection<ChatBot>('chatbot')
-	const result = await collection.updateOne({ _id: objectId }, { $set: { name, model, initialPrompt } })
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
+		const result = await collection.updateOne(
+			{ _id: objectId },
+			{ $set: updatedValues, }
+		)
 
-	if (result.modifiedCount > 0) {
-		res.json({
-			msg: 'Chatbot updated!!!',
-		})
-	} else {
-		res.json({
-			msg: 'Error updating chatbot!!',
-		})
+		if (result.modifiedCount > 0) {
+			res.json({
+				msg: 'Chatbot updated!!!',
+			})
+		} else {
+			throw Error('Error updating chatbot!!')
+		}
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
 	}
 }
 

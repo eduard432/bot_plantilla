@@ -126,7 +126,6 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 			messages,
 			system: chatBotResult.initialPrompt,
 			onFinish: async ({text, response}) => {
-				console.log({response})
 				await chatCollection.updateOne(
 					{ _id: objectId },
 					{

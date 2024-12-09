@@ -51,7 +51,7 @@ export default function ChatPage() {
 	}
 
 	return (
-		<main className="p-4 px-12">
+		<main className="p-4 px-12 h-screen">
 			<button onClick={() => router.push('/')}>
 				<FaArrowLeft />
 			</button>
@@ -61,8 +61,8 @@ export default function ChatPage() {
 						Chateando con: {chatInfo.chatBot.name}
 					</h2>
 					<p className="text-xl text-semibold">Usa el model: {chatInfo.chatBot.model}</p>
-					<section className="rounded border border-gray-300 p-4 w-2/3 mx-auto h-full flex flex-col justify-between">
-						<ul className="overflow-auto px-4 h-full">
+					<section className="rounded border h-4/5 border-gray-300 p-4 w-2/3 mx-auto flex flex-col justify-between gap-4">
+						<ul className="overflow-y-auto  px-4">
 							{messages.map((message, i) => (
 								<li
 									key={i}
@@ -87,8 +87,9 @@ export default function ChatPage() {
 								value={input}
 								onChange={handleInputChange}
 								placeholder="Escribe algo..."
-								className="w-full py-2 px-4 outline-transparent rounded"
+								className="w-full py-2 px-4 outline-none rounded"
 								onKeyDown={handleSubmitKey}
+								rows={2}
 							/>
 							<button type="submit" className="px-4">
 								<FaPaperPlane />
