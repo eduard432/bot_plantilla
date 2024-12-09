@@ -23,7 +23,9 @@ export default function EditPage() {
 	}, [])
 
 	const handleGetData = async (id: string) => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${params.id}`)
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${params.id}`
+		)
 		if (response.ok) {
 			const data: ChatBotRecord = await response.json()
 			setChatBot(data)
@@ -40,11 +42,17 @@ export default function EditPage() {
 					<Legend className="text-lg font-bold">Configuración del chatbot:</Legend>
 					<Field>
 						<Label>Nombre:</Label>
-						<Input defaultValue={chatBot.name} className="mx-2 border border-gray-300 rounded px-2 py-1" name="name" />
+						<Input
+							defaultValue={chatBot.name}
+							className="mx-2 border border-gray-300 rounded px-2 py-1"
+							name="name"
+						/>
 					</Field>
 					<Field>
 						<Label className="">Modelo:</Label>
-						<Select className="border border-gray-300 rounded px-2 py-1 mx-2" name="model">
+						<Select
+							className="border border-gray-300 rounded px-2 py-1 mx-2"
+							name="model">
 							<option>gpt-4o</option>
 							<option>gpt-4o-mini</option>
 							<option>gp4-3.5 Turbo</option>
@@ -52,7 +60,11 @@ export default function EditPage() {
 					</Field>
 					<Field>
 						<Label className="block">Initial Prompt:</Label>
-						<Textarea rows={4} className="resize-x mt-1 border border-gray-300 rounded px-2 py-1" name="initialPrompt" />
+						<Textarea
+							rows={4}
+							className="resize-x mt-1 border border-gray-300 rounded px-2 py-1"
+							name="initialPrompt"
+						/>
 					</Field>
 				</Fieldset>
 			)}

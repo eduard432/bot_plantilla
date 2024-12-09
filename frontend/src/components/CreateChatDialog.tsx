@@ -39,15 +39,11 @@ const EditChatBotDialog: FC<{
 			const data: { msg: string; chatBot: ChatBotRecord } = await response.json()
 			setData((rest) => [...rest, data.chatBot])
 		}
-        setIsOpen(false)
+		setIsOpen(false)
 	}
 
 	return (
-		<Dialog
-			open={isOpen}
-			onClose={() => setIsOpen(false)}
-			className="relative z-50"
-		>
+		<Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
 			<div className="fixed inset-0 flex w-screen items-center justify-center p-4">
 				<DialogPanel className="max-w-lg space-y-4 border bg-white p-12">
 					<DialogTitle className="font-bold">Crear nuevo ChatBot</DialogTitle>
@@ -78,8 +74,7 @@ const EditChatBotDialog: FC<{
 									}))
 								}}
 								className="border border-gray-300 rounded px-2 py-1 mx-2"
-								name="model"
-							>
+								name="model">
 								<option>gpt-3.5-turbo</option>
 								<option>gpt4-turbo</option>
 								<option>gpt-4</option>
@@ -108,14 +103,12 @@ const EditChatBotDialog: FC<{
 							onClick={() => {
 								setIsOpen(false)
 								setChatBot(defaultChatBot)
-							}}
-						>
+							}}>
 							Cancelar
 						</button>
 						<button
 							className="rounded px-3 py-2 bg-black text-white"
-							onClick={() => handleSaveData()}
-						>
+							onClick={() => handleSaveData()}>
 							Guardar
 						</button>
 					</div>
