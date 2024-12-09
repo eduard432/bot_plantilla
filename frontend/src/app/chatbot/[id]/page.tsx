@@ -1,4 +1,5 @@
 'use client'
+
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ChatBotRecord } from '@/types/ChatBot'
@@ -19,10 +20,10 @@ export default function EditPage() {
 	const router = useRouter()
 
 	useEffect(() => {
-		handleGetData(params.id)
+		handleGetData()
 	}, [])
 
-	const handleGetData = async (id: string) => {
+	const handleGetData = async () => {
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${params.id}`
 		)
@@ -32,41 +33,53 @@ export default function EditPage() {
 		}
 	}
 
+	if (!params.id) {
+		return router.replace('/')
+	}
+
 	return (
 		<main className="p-4 px-12">
 			<button onClick={() => router.push('/')}>
 				<FaArrowLeft />
 			</button>
 			{chatBot && (
-				<Fieldset className="space-y-8 rounded border border-gray-300 p-2">
-					<Legend className="text-lg font-bold">Configuración del chatbot:</Legend>
-					<Field>
-						<Label>Nombre:</Label>
-						<Input
-							defaultValue={chatBot.name}
-							className="mx-2 border border-gray-300 rounded px-2 py-1"
-							name="name"
-						/>
-					</Field>
-					<Field>
-						<Label className="">Modelo:</Label>
-						<Select
-							className="border border-gray-300 rounded px-2 py-1 mx-2"
-							name="model">
-							<option>gpt-4o</option>
-							<option>gpt-4o-mini</option>
-							<option>gp4-3.5 Turbo</option>
-						</Select>
-					</Field>
-					<Field>
-						<Label className="block">Initial Prompt:</Label>
-						<Textarea
-							rows={4}
-							className="resize-x mt-1 border border-gray-300 rounded px-2 py-1"
-							name="initialPrompt"
-						/>
-					</Field>
-				</Fieldset>
+				<>
+					<h2 className="text-2xl font-semibold">Editar a: "{chatBot.name}"</h2>
+					<section className="w-1/2 mx-auto" >
+						
+						<form className="flex flex-col gap-y-2 my-4" >
+							<div className="flex gap-2 items-center" >
+								<label htmlFor="name">Nombre:</label>
+								<input className="px-2 py-1 outline-none rounded border border-gray-300" name="name" type="text" />
+							</div>
+							<div className="flex gap-2 items-center" >
+								<label htmlFor="model">Modelo:</label>
+								<select name="model" className="px-2 py-1 outline-none rounded border border-gray-300">
+									<option>gpt-3.5-turbo</option>
+									<option>gpt4-turbo</option>
+									<option>gpt-4</option>
+									<option>gpt-4o</option>
+								</select>
+							</div>
+							<div className="flex flex-col gap-2" >
+								<label htmlFor="initial_prompt">Mensaje Inicial:</label>
+								<textarea className="outline-none border border-gray-300 rounded px-2 py-1" rows={2} name="initial_prompt"></textarea>
+							</div>
+						</form>
+						<div className="flex space-x-2" >
+							<button
+								className="rounded px-3 py-2 border border-gray-300"
+								onClick={() => {}}>
+								Descartar
+							</button>
+							<button
+								className="rounded px-3 py-2 bg-black text-white"
+								onClick={() => {}}>
+								Guardar
+							</button>
+						</div>
+					</section>
+				</>
 			)}
 		</main>
 	)

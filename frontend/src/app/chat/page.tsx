@@ -87,7 +87,7 @@ export default function ChatPage() {
 								value={input}
 								onChange={handleInputChange}
 								placeholder="Escribe algo..."
-								className="w-full py-2 px-4 outline-none"
+								className="w-full py-2 px-4 outline-transparent rounded"
 								onKeyDown={handleSubmitKey}
 							/>
 							<button type="submit" className="px-4">
