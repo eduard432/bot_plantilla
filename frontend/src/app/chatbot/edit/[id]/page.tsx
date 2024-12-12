@@ -56,16 +56,19 @@ export default function EditPage() {
 		JSON.stringify(currentValues)
 
 	const onSubmit: SubmitHandler<InputData> = async (inputData) => {
-		const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`, {
-			method: "PUT",
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(inputData),
-		})
-		if(result.ok && chatBot) {
-			const {initialPrompt, name} = inputData
-			const newData = {...chatBot, initialPrompt, name}
+		const result = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`,
+			{
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(inputData),
+			}
+		)
+		if (result.ok && chatBot) {
+			const { initialPrompt, name } = inputData
+			const newData = { ...chatBot, initialPrompt, name }
 			setChatBot(newData)
 		}
 	}
@@ -99,9 +102,16 @@ export default function EditPage() {
 							</div>
 							<div className="flex gap-2 items-center">
 								<label htmlFor="model">Modelo:</label>
-								<p className="px-2 py-1 border rounded border-gray-300 text-gray-500">
-									{chatBot.model}
-								</p>
+								<select
+									disabled
+									value={chatBot.model}
+									className="px-2 py-1 border rounded border-gray-300"
+									name="model">
+									<option>gpt-3.5-turbo</option>
+									<option>gpt4-turbo</option>
+									<option>gpt-4</option>
+									<option>gpt-4o</option>
+								</select>
 							</div>
 							<div className="flex flex-col gap-2">
 								<label htmlFor="initialPrompt">Mensaje Inicial:</label>
@@ -109,7 +119,7 @@ export default function EditPage() {
 									{...register('initialPrompt', { required: true })}
 									className="outline-none border border-gray-300 rounded px-2 py-1"
 									rows={2}
-									name="initial_prompt"></textarea>
+									name="initialPrompt"></textarea>
 							</div>
 							<div className="flex space-x-2">
 								<button

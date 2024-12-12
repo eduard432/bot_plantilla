@@ -16,10 +16,6 @@ export default function Home() {
 		handleGetData()
 	}, [])
 
-	useEffect(() => {
-		console.log(data)
-	}, [data])
-
 	const handleGetData = async () => {
 		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/all`)
 		if (response.ok) {
@@ -46,7 +42,7 @@ export default function Home() {
 
 	const handleChat = async (id: string, defaultChatId: string | undefined) => {
 		if (defaultChatId) {
-			router.push(`/chat?id=${defaultChatId}`)
+			router.push(`/chat/${defaultChatId}`)
 		} else {
 			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/add/${id}`, {
 				method: 'POST',
@@ -67,7 +63,7 @@ export default function Home() {
 			<main className="p-4 px-12">
 				<section className="my-4">
 					<button
-						onClick={() => setIsOpen(true)}
+						onClick={() => router.push(`/chatbot/create`)}
 						className="bg-black text-white rounded-md px-4 py-2">
 						<FaRegSquarePlus />
 					</button>
@@ -80,7 +76,7 @@ export default function Home() {
 							<div className="mt-2 flex space-x-2">
 								<button
 									className="text-sm bg-black text-white rounded p-2"
-									onClick={() => router.push(`/chatbot/${_id}`)}>
+									onClick={() => router.push(`/chatbot/edit/${_id}`)}>
 									<FaPencil />
 								</button>
 								<button

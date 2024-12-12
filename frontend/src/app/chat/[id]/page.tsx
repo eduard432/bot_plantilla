@@ -1,7 +1,7 @@
 'use client'
 
 import { ChatGetInfo } from '@/types/Api'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { KeyboardEventHandler, useEffect, useState } from 'react'
 import { FaArrowLeft, FaPaperPlane } from 'react-icons/fa6'
 import { useChat } from 'ai/react'
@@ -10,13 +10,8 @@ export default function ChatPage() {
 	const router = useRouter()
 
 	const [chatInfo, setChatInfo] = useState<ChatGetInfo>()
+	const { id } = useParams<{ id: string }>()
 
-	const params = useSearchParams()
-	const id = params.get('id')
-
-	if (!id) {
-		return router.replace('/')
-	}
 
 	const { messages, input, handleInputChange, handleSubmit } = useChat({
 		api: `${process.env.NEXT_PUBLIC_API_URL}/chat`,
