@@ -102,6 +102,37 @@ const handleGetChatInfo: RequestHandler<{ id: string }> = async (req, res) => {
 	}
 }
 
+const handleDeleteAllMessages: RequestHandler<{id: string}> = async (req, res) => {
+	try {
+		const { id } = req.params
+		const objectId = new ObjectId(id)
+
+		const db = getDatabase()
+		const collection = db.collection<Chat>('chat')
+		const result = await collection.updateOne({_id: objectId}, {
+			$set: {
+				messages: []
+			}
+		})
+
+		if(result.modifiedCount > 0 ) {
+			res.json({
+				msg: 'Messages removed!!'
+			})
+		} else {
+			res.json({
+				msg: 'Chat not found'
+			}).status(400)
+		}
+
+	} catch (error) {
+		console.log(error)
+		res.json({
+			msg: 'Error'
+		}).status(500)
+	}
+}
+
 const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = async (
 	req,
 	res
@@ -151,5 +182,6 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 ChatRouter.get('/info/:id', handleGetChatInfo)
 ChatRouter.post('/add/:id', handleAddChat)
 ChatRouter.post('/', handleChat)
+ChatRouter.delete('/messages/:id', handleDeleteAllMessages)
 
 export default ChatRouter

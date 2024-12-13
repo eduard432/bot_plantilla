@@ -3,18 +3,15 @@
 import { ChatGetInfo } from '@/types/Api'
 import { useParams, useRouter } from 'next/navigation'
 import { KeyboardEventHandler, useEffect, useState } from 'react'
-import { FaPaperPlane } from 'react-icons/fa6'
+import { FaPaperPlane, FaPencil, FaTrash } from 'react-icons/fa6'
 import { useChat } from 'ai/react'
 import ForwardButton from '@/components/ForwardButton'
 
 export default function ChatPage() {
-	const router = useRouter()
-
 	const [chatInfo, setChatInfo] = useState<ChatGetInfo>()
 	const { id } = useParams<{ id: string }>()
 
-
-	const { messages, input, handleInputChange, handleSubmit } = useChat({
+	const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
 		api: `${process.env.NEXT_PUBLIC_API_URL}/chat`,
 		initialMessages: chatInfo?.messages.map(({ _id, ...rest }) => ({
 			id: _id,
@@ -22,6 +19,8 @@ export default function ChatPage() {
 		})),
 		body: { id },
 	})
+
+	const router = useRouter()
 
 	useEffect(() => {
 		getChatInfo()
@@ -46,6 +45,15 @@ export default function ChatPage() {
 		}
 	}
 
+	const handleDeleteAllMessages = async () => {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/messages/${id}`, {
+			method: 'DELETE'
+		})
+		if (response.ok) {
+			setMessages([])
+		}
+	}
+
 	return (
 		<main className="p-4 px-12 h-screen">
 			<ForwardButton />
@@ -55,6 +63,20 @@ export default function ChatPage() {
 						Chateando con: {chatInfo.chatBot.name}
 					</h2>
 					<p className="text-xl text-semibold">Usa el model: {chatInfo.chatBot.model}</p>
+					<section className="w-2/3 mx-auto my-4 flex justify-end" >
+						<div className="flex gap-1">
+							<button
+								onClick={() => router.push(`/chatbot/edit/${chatInfo.chatBot._id}`)}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaPencil /> Editar ChatBot
+							</button>
+							<button
+								onClick={() => handleDeleteAllMessages()}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaTrash /> Eliminar Mensajes
+							</button>
+						</div>
+					</section>
 					<section className="rounded border h-4/5 border-gray-300 p-4 w-2/3 mx-auto flex flex-col justify-between gap-4">
 						<ul className="overflow-y-auto  px-4">
 							{messages.map((message, i) => (
