@@ -220,14 +220,14 @@ export default function EditPage() {
 								<button
 									disabled={hasChanges}
 									type="button"
-									className="rounded px-3 py-2 border border-gray-300 disabled:opacity-60"
+									className="rounded px-2 py-1 border border-gray-300 disabled:opacity-60 text-sm"
 									onClick={() => reset()}>
 									Descartar
 								</button>
 								<button
 									disabled={hasChanges}
 									type="submit"
-									className="rounded px-3 py-2 bg-black text-white disabled:opacity-60">
+									className="rounded px-2 py-1 bg-black text-white disabled:opacity-60 text-sm">
 									Guardar
 								</button>
 							</div>
