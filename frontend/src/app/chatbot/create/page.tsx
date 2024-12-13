@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { FaArrowLeft } from 'react-icons/fa6'
 import { useForm, SubmitHandler } from 'react-hook-form'
+import ForwardButton from '@/components/ForwardButton'
 
 type InputData = {
 	name: string
@@ -40,9 +40,7 @@ export default function EditPage() {
 
 	return (
 		<main className="p-4 px-12">
-			<button onClick={() => router.push('/')}>
-				<FaArrowLeft />
-			</button>
+			<ForwardButton />
 			<h2 className="text-2xl font-semibold">Crear bot</h2>
 			<section className="w-1/2 mx-auto">
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-2 my-4">

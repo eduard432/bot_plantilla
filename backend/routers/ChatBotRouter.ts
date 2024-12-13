@@ -1,8 +1,8 @@
 import { RequestHandler, Router } from 'express'
-import { ChatBot } from '../types/ChatBot'
+import { ChatBot, Connection, ConnectionType } from '../types/ChatBot'
 import { getDatabase } from '../utils/mongodb'
-import { ObjectId } from 'mongodb'
-import { Chat, Message } from '../types/Chat'
+import { ObjectId, UpdateFilter } from 'mongodb'
+import { Chat } from '../types/Chat'
 import pickBy from 'lodash.pickby'
 
 const ChatBotRouter = Router()
@@ -18,7 +18,14 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
 		const chatCollection = db.collection<Chat>('chat')
 
-		const chatBot = { _id: chatBotId, model, name, initialPrompt, defaultChatId: chatId }
+		const chatBot = {
+			_id: chatBotId,
+			model,
+			name,
+			initialPrompt,
+			defaultChatId: chatId,
+			connections: {},
+		}
 		const chatBotResult = await chatBotCollection.insertOne(chatBot)
 
 		await chatCollection.insertOne({ _id: chatId, chatBotId: chatBotId, messages: [] })
@@ -102,14 +109,11 @@ const handleUpdateChatbots: RequestHandler<{ id: string }, {}, ChatBot> = async 
 		const { id } = req.params
 		const objectId = new ObjectId(id)
 		const { name, model, initialPrompt } = req.body
-		const updatedValues = pickBy({name, model, initialPrompt})
+		const updatedValues = pickBy({ name, model, initialPrompt })
 
 		const db = getDatabase()
 		const collection = db.collection<ChatBot>('chatbot')
-		const result = await collection.updateOne(
-			{ _id: objectId },
-			{ $set: updatedValues, }
-		)
+		const result = await collection.updateOne({ _id: objectId }, { $set: updatedValues })
 
 		if (result.modifiedCount > 0) {
 			res.json({
@@ -146,10 +150,106 @@ const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, res) => 
 	}
 }
 
+const handleAddConnection: RequestHandler<
+	{},
+	{},
+	{ id: string; type: ConnectionType }
+> = async (req, res) => {
+	try {
+		const { id, type } = req.body
+		const objectId = new ObjectId(id)
+
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
+		const path = `connections.${type}`
+
+		const query = {
+			_id: objectId,
+			[path]: { $exists: false, $ne: true },
+		}
+
+		const update = {
+			$set: {
+				[path]: {
+					type,
+					chatsId: [],
+				},
+			},
+		}
+
+		const result = await collection.updateOne(query, update)
+
+		if (result.modifiedCount > 0) {
+			res.json({
+				msg: 'Chatbot updated!!!',
+			})
+		} else {
+			res.json({
+				msg: 'Chatbot not updated'
+			})
+		}
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(500)
+	}
+}
+
+const handleDeleteConnection: RequestHandler<
+	{},
+	{},
+	{ id: string; type: ConnectionType }
+> = async (req, res) => {
+	try {
+		const { id, type } = req.body
+		const objectId = new ObjectId(id)
+
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
+		const path = `connections.${type}`
+
+		const query = {
+			_id: objectId,
+			[path]: { $exists: true, $ne: true },
+		}
+
+		const update: UpdateFilter<ChatBot> = {
+			$unset: {
+				[path]: ""
+			},
+		}
+
+		const result = await collection.updateOne(query, update)
+
+		if (result.modifiedCount > 0) {
+			res.json({
+				msg: 'Chatbot updated!!!',
+			})
+		} else {
+			res.json({
+				msg: 'Chatbot not updated'
+			}).status(400)
+		}
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(500)
+	}
+}
+
 ChatBotRouter.post('/', handleCreateChatBot)
 ChatBotRouter.get('/all', handleGetChatbots)
 ChatBotRouter.get('/:id', handleGetChatbot)
 ChatBotRouter.put('/:id', handleUpdateChatbots)
 ChatBotRouter.delete('/:id', handleDeleteChatbot)
+
+ChatBotRouter.post('/connection', handleAddConnection)
+ChatBotRouter.post('/connection/delete', handleDeleteConnection)
 
 export default ChatBotRouter

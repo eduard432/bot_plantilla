@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react'
 import { ChatBotRecord } from '@/types/ChatBot'
 import { FaRegSquarePlus, FaRegTrashCan, FaPencil, FaRegMessage } from 'react-icons/fa6'
 import { useRouter } from 'next/navigation'
-import EditChatBotDialog from '@/components/CreateChatDialog'
 
 export default function Home() {
 	const [data, setData] = useState<ChatBotRecord[]>([])
-	const [isOpen, setIsOpen] = useState(false)
 
 	const router = useRouter()
 
@@ -53,7 +51,7 @@ export default function Home() {
 			})
 			if (response.ok) {
 				const data: { msg: string; chatId: string } = await response.json()
-				router.push(`/chat?id=${data.chatId}`)
+				router.push(`/chat/${defaultChatId}`)
 			}
 		}
 	}
@@ -70,10 +68,10 @@ export default function Home() {
 				</section>
 				<section className="grid grid-cols-4 gap-4">
 					{data.map(({ model, name, _id, defaultChatId }, i) => (
-						<div key={i} className="p-2 border rounded border-gray-300 min-w-48">
+						<div key={i} className="p-2 px-4 border rounded border-gray-300 min-w-48 group min-h-28">
 							<h2 className="text-xl font-semibold">{name}</h2>
 							<p>Model: {model}</p>
-							<div className="mt-2 flex space-x-2">
+							<div className="mt-2 hidden space-x-2 group-hover:flex">
 								<button
 									className="text-sm bg-black text-white rounded p-2"
 									onClick={() => router.push(`/chatbot/edit/${_id}`)}>
@@ -94,7 +92,6 @@ export default function Home() {
 					))}
 				</section>
 			</main>
-			<EditChatBotDialog isOpen={isOpen} setIsOpen={setIsOpen} setData={setData} />
 		</>
 	)
 }

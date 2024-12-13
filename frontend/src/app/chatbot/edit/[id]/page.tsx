@@ -3,8 +3,16 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ChatBotRecord } from '@/types/ChatBot'
-import { FaArrowLeft } from 'react-icons/fa6'
+
+import {
+	FaRegTrashCan,
+	FaRegMessage,
+	FaRegSquarePlus,
+	FaCopy,
+	FaTrash,
+} from 'react-icons/fa6'
 import { useForm, SubmitHandler } from 'react-hook-form'
+import ForwardButton from '@/components/ForwardButton'
 
 type InputData = {
 	name: string
@@ -14,6 +22,7 @@ type InputData = {
 export default function EditPage() {
 	const params = useParams<{ id: string }>()
 	const [chatBot, setChatBot] = useState<ChatBotRecord>()
+	const [selectedConn, setSelectedConn] = useState<string>('')
 
 	const router = useRouter()
 
@@ -73,18 +82,103 @@ export default function EditPage() {
 		}
 	}
 
+	const handleAddConnection = async () => {
+		if (!chatBot) return
+		if (selectedConn == '') return
+		if (Object.keys(chatBot.connections).includes(selectedConn)) return
+		const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/connection/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				id: chatBot?._id,
+				type: selectedConn,
+			}),
+		})
+		if (result.ok) {
+			const newData = {
+				...chatBot,
+				connections: {
+					...chatBot.connections,
+					[selectedConn]: {
+						type: selectedConn,
+						chatsId: [],
+					},
+				},
+			}
+			setChatBot(newData)
+			setSelectedConn('')
+		}
+	}
+
+	const handleRemoveConnection = async (type: string) => {
+		if (!chatBot) return
+		const body = JSON.stringify({
+			id: chatBot._id,
+			type,
+		})
+		console.log({ body })
+		const result = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/connection/delete`,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body,
+			}
+		)
+
+		if (result.ok) {
+			// Eliminamos la propiedad del objeto en el state
+			const { [type]: _, ...newConnections } = chatBot.connections
+
+			const newData = {
+				...chatBot,
+				connections: newConnections,
+			}
+			setChatBot(newData)
+		}
+	}
+
+	const handleDeleteData = async () => {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`, {
+			method: 'DELETE',
+		})
+		if (response.ok) {
+			router.push('/')
+		}
+	}
+
 	return (
 		<main className="p-4 px-12">
-			<button onClick={() => router.push('/')}>
-				<FaArrowLeft />
-			</button>
+			<ForwardButton />
 			{chatBot && (
 				<>
 					<h2 className="text-2xl font-semibold">Editar a: "{chatBot.name}"</h2>
 					<section className="w-1/2 mx-auto">
+						<div className="flex gap-1">
+							<button
+								onClick={() => navigator.clipboard.writeText(chatBot._id)}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaCopy /> Copiar Id
+							</button>
+							<button
+								onClick={() => router.push(`/chat/${chatBot.defaultChatId}`)}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaRegMessage /> Chat
+							</button>
+							<button
+								onClick={() => handleDeleteData()}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaTrash /> Eliminar
+							</button>
+						</div>
 						<form
 							onSubmit={handleSubmit(onSubmit)}
 							className="flex flex-col gap-y-2 my-4">
+							<h4 className="text-xl font-semibold">Datos:</h4>
 							<div className="flex gap-2 items-center">
 								<label htmlFor="name">Nombre:</label>
 								<input
@@ -121,6 +215,7 @@ export default function EditPage() {
 									rows={2}
 									name="initialPrompt"></textarea>
 							</div>
+
 							<div className="flex space-x-2">
 								<button
 									disabled={hasChanges}
@@ -137,6 +232,43 @@ export default function EditPage() {
 								</button>
 							</div>
 						</form>
+						<hr />
+						<h4 className="text-xl font-semibold my-2">Conexiones:</h4>
+						<div className="my-4 flex">
+							<select
+								value={selectedConn}
+								onChange={(event) => setSelectedConn(event.target.value)}
+								className="px-2 py-1 border rounded border-gray-300"
+								name="connectionType">
+								<option value=""></option>
+								<option value="wa">WhatsApp</option>
+								<option value="disc">Discord</option>
+							</select>
+							<button
+								onClick={() => handleAddConnection()}
+								className="bg-black text-white px-3 py-1 text-sm rounded mx-2 flex items-center gap-1">
+								<FaRegSquarePlus /> Agregar conexión
+							</button>
+						</div>
+						<div className="divide-y border-y  border-gray-300 px-6">
+							{Object.keys(chatBot.connections).map((type) => (
+								<span
+									key={type}
+									className="flex items-center gap-2 justify-between py-2 group min-h-12">
+									<p className="w-1/3">Cliente: {type}</p>
+									<p className="w-1/3 text-start">
+										Chats: {chatBot.connections[type].chatsId.length}
+									</p>
+									<div className="w-1/3 flex justify-end">
+										<button
+											onClick={() => handleRemoveConnection(type)}
+											className="bg-gray-700 text-white rounded-md p-2 hidden group-hover:block">
+											<FaRegTrashCan />
+										</button>
+									</div>
+								</span>
+							))}
+						</div>
 					</section>
 				</>
 			)}

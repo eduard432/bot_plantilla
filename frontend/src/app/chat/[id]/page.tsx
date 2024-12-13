@@ -3,8 +3,9 @@
 import { ChatGetInfo } from '@/types/Api'
 import { useParams, useRouter } from 'next/navigation'
 import { KeyboardEventHandler, useEffect, useState } from 'react'
-import { FaArrowLeft, FaPaperPlane } from 'react-icons/fa6'
+import { FaPaperPlane } from 'react-icons/fa6'
 import { useChat } from 'ai/react'
+import ForwardButton from '@/components/ForwardButton'
 
 export default function ChatPage() {
 	const router = useRouter()
@@ -47,9 +48,7 @@ export default function ChatPage() {
 
 	return (
 		<main className="p-4 px-12 h-screen">
-			<button onClick={() => router.push('/')}>
-				<FaArrowLeft />
-			</button>
+			<ForwardButton />
 			{chatInfo && (
 				<>
 					<h2 className="text-2xl font-semibold">
