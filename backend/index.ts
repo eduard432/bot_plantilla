@@ -4,7 +4,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import ChatBotRouter from './routers/ChatBotRouter'
 import { connectToDatabase } from './utils/mongodb'
-import ChatRouter from './routers/ChatRouter'
+import ChatDefaultRouter from './routers/ChatDefaultRouter'
 dotenv.config()
 
 
@@ -16,7 +16,7 @@ app.disable('x-powered-by')
 app.use(express.json(), cors(), morgan('dev'))
 
 app.use('/chatbot', ChatBotRouter)
-app.use('/chat', ChatRouter)
+app.use('/chat/default', ChatDefaultRouter)
 
 app.listen(PORT, async () => {
     await connectToDatabase()

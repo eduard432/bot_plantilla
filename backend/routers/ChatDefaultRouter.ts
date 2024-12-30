@@ -7,7 +7,7 @@ import { ChatGetInfo } from '../types/Api'
 import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
-const ChatRouter = Router()
+const ChatDefaultRouter = Router()
 
 const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> = async (
 	req,
@@ -179,9 +179,9 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 	}
 }
 
-ChatRouter.get('/info/:id', handleGetChatInfo)
-ChatRouter.post('/add/:id', handleAddChat)
-ChatRouter.post('/', handleChat)
-ChatRouter.delete('/messages/:id', handleDeleteAllMessages)
+ChatDefaultRouter.get('/info/:id', handleGetChatInfo)
+ChatDefaultRouter.post('/add/:id', handleAddChat)
+ChatDefaultRouter.post('/', handleChat)
+ChatDefaultRouter.delete('/messages/:id', handleDeleteAllMessages)
 
-export default ChatRouter
+export default ChatDefaultRouter

@@ -12,7 +12,7 @@ export default function ChatPage() {
 	const { id } = useParams<{ id: string }>()
 
 	const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
-		api: `${process.env.NEXT_PUBLIC_API_URL}/chat`,
+		api: `${process.env.NEXT_PUBLIC_API_URL}/chat/default`,
 		initialMessages: chatInfo?.messages.map(({ _id, ...rest }) => ({
 			id: _id,
 			...rest,
@@ -32,7 +32,7 @@ export default function ChatPage() {
 	}, [messages])
 
 	const getChatInfo = async () => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/info/${id}`)
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/default/info/${id}`)
 		const data: ChatGetInfo = await response.json()
 		setChatInfo(data)
 	}
@@ -46,7 +46,7 @@ export default function ChatPage() {
 	}
 
 	const handleDeleteAllMessages = async () => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/messages/${id}`, {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/default/messages/${id}`, {
 			method: 'DELETE'
 		})
 		if (response.ok) {
