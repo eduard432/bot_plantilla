@@ -2,3 +2,7 @@ node_modules
 .env
 db
 boilerplate.ts
+auth_session
+.wwebjs_cache
+.wwebjs_auth
+settings.json

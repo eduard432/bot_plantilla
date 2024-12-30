@@ -1,5 +1,5 @@
 import { RequestHandler, Router } from 'express'
-import { ChatBot, Connection, ConnectionType } from '../types/ChatBot'
+import { ChatBot, ConnectionType } from '../types/ChatBot'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId, UpdateFilter } from 'mongodb'
 import { Chat } from '../types/Chat'

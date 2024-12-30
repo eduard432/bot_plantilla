@@ -1,18 +1,19 @@
 import { Client, LocalAuth } from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal'
+import dotenv from 'dotenv'
+import { setupSettings, defaultMenu, saveInitialSettings } from './menus'
 
+dotenv.config()
 
 const client = new Client({
-    puppeteer: {
-        args: ['--no-sandbox']
-    },
-    authStrategy: new LocalAuth({
-        dataPath: './auth_session'
-    })
+    authStrategy: new LocalAuth()
 })
 
-client.once('ready', () => {
+client.once('ready', async () => {
+    await saveInitialSettings(client)
+    console.clear()
     console.log('Client is ready!!')
+    await setupSettings(client)
 })
 
 client.once('disconnected', () => {
@@ -21,5 +22,7 @@ client.once('disconnected', () => {
 
 client.on('qr', (qrString) => {
     console.log('QR READY!!')
-    qrcode.generate(qrString)
+    qrcode.generate(qrString, {small: true})
 })
+
+defaultMenu(client)
