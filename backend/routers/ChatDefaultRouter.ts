@@ -9,10 +9,7 @@ import { openai } from '@ai-sdk/openai'
 
 const ChatDefaultRouter = Router()
 
-const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> = async (
-	req,
-	res
-) => {
+const handleAddChat: RequestHandler<{ id: string }> = async (req, res) => {
 	try {
 		const { id } = req.params
 		const { isDefault } = req.body || false
@@ -28,17 +25,11 @@ const handleAddChat: RequestHandler<{ id: string }, {}, { isDefault: boolean }> 
 		if (chatResult) {
 			const chatbotCollection = db.collection<ChatBot>('chatbot')
 
-			const updateFilter: UpdateFilter<ChatBot> = isDefault
-				? {
-						$set: {
-							defaultChatId: chatResult.insertedId,
-						},
-				  }
-				: {
-						$push: {
-							chats: chatResult.insertedId,
-						},
-				  }
+			const updateFilter: UpdateFilter<ChatBot> = {
+				$set: {
+					defaultChatId: chatResult.insertedId,
+				},
+			}
 
 			const chatbotResult = await chatbotCollection.updateOne(
 				{ _id: ObjectId },
@@ -102,34 +93,40 @@ const handleGetChatInfo: RequestHandler<{ id: string }> = async (req, res) => {
 	}
 }
 
-const handleDeleteAllMessages: RequestHandler<{id: string}> = async (req, res) => {
+const handleDeleteAllMessages: RequestHandler<{ id: string }> = async (req, res) => {
 	try {
 		const { id } = req.params
 		const objectId = new ObjectId(id)
 
 		const db = getDatabase()
 		const collection = db.collection<Chat>('chat')
-		const result = await collection.updateOne({_id: objectId}, {
-			$set: {
-				messages: []
+		const result = await collection.updateOne(
+			{ _id: objectId },
+			{
+				$set: {
+					messages: [],
+				},
 			}
-		})
+		)
 
-		if(result.modifiedCount > 0 ) {
+		if (result.modifiedCount > 0) {
 			res.json({
-				msg: 'Messages removed!!'
+				msg: 'Messages removed!!',
 			})
 		} else {
-			res.json({
-				msg: 'Chat not found'
-			}).status(400)
+			res
+				.json({
+					msg: 'Chat not found',
+				})
+				.status(400)
 		}
-
 	} catch (error) {
 		console.log(error)
-		res.json({
-			msg: 'Error'
-		}).status(500)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(500)
 	}
 }
 
@@ -148,15 +145,15 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 		if (!chatResult) throw Error('Error fetching messages')
 
 		const chatBotCollection = db.collection<ChatBot>('chatbot')
-		const chatBotResult = await chatBotCollection.findOne({_id: chatResult.chatBotId})
+		const chatBotResult = await chatBotCollection.findOne({ _id: chatResult.chatBotId })
 
-		if(!chatBotResult) throw Error('Error fetching chatbot settings')
+		if (!chatBotResult) throw Error('Error fetching chatbot settings')
 
 		const result = streamText({
 			model: openai(chatBotResult.model),
 			messages,
 			system: chatBotResult.initialPrompt,
-			onFinish: async ({text, response}) => {
+			onFinish: async ({ text, response }) => {
 				await chatCollection.updateOne(
 					{ _id: objectId },
 					{
