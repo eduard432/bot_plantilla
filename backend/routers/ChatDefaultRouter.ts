@@ -12,7 +12,6 @@ const ChatDefaultRouter = Router()
 const handleAddChat: RequestHandler<{ id: string }> = async (req, res) => {
 	try {
 		const { id } = req.params
-		const { isDefault } = req.body || false
 		const objectId = new ObjectId(id)
 
 		const db = getDatabase()
