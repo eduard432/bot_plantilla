@@ -23,8 +23,18 @@ export default function EditPage() {
 	const params = useParams<{ id: string }>()
 	const [chatBot, setChatBot] = useState<ChatBotRecord>()
 	const [selectedConn, setSelectedConn] = useState<string>('')
+	const [selectedFunc, setSelectedFunc] = useState<string>('')
+	const [funcs, setFuncs] = useState<string[]>([])
 
 	const router = useRouter()
+
+	const handleGetFunctions = async () => {
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/plugins`)
+		if (response.ok) {
+			const data: {plugins: string[]} = await response.json()
+			setFuncs(data.plugins)
+		}
+	}
 
 	const handleGetData = async () => {
 		const response = await fetch(
@@ -38,6 +48,7 @@ export default function EditPage() {
 
 	useEffect(() => {
 		handleGetData()
+		handleGetFunctions()
 	}, [])
 
 	const {
@@ -79,6 +90,30 @@ export default function EditPage() {
 			const { initialPrompt, name } = inputData
 			const newData = { ...chatBot, initialPrompt, name }
 			setChatBot(newData)
+		}
+	}
+
+	const handleAddFunction = async () => {
+		if (!chatBot) return
+		if (selectedFunc == '') return
+		if (chatBot.tools.includes(selectedFunc)) return
+		const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/plugins`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				botId: chatBot?._id,
+				plugin: selectedFunc,
+			}),
+		})
+		if (result.ok) {
+			const newData = {
+				...chatBot,
+				tools: [...chatBot.tools, selectedFunc],
+			}
+			setChatBot(newData)
+			setSelectedFunc('')
 		}
 	}
 
@@ -143,9 +178,12 @@ export default function EditPage() {
 	}
 
 	const handleDeleteData = async () => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`, {
-			method: 'DELETE',
-		})
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`,
+			{
+				method: 'DELETE',
+			}
+		)
 		if (response.ok) {
 			router.push('/')
 		}
@@ -262,6 +300,42 @@ export default function EditPage() {
 									<div className="w-1/3 flex justify-end">
 										<button
 											onClick={() => handleRemoveConnection(type)}
+											className="bg-gray-700 text-white rounded-md p-2 hidden group-hover:block">
+											<FaRegTrashCan />
+										</button>
+									</div>
+								</span>
+							))}
+						</div>
+						<h4 className="text-xl font-semibold my-2">Funciones:</h4>
+						<div className="my-4 flex">
+							<select
+								value={selectedFunc}
+								onChange={(event) => setSelectedFunc(event.target.value)}
+								className="px-2 py-1 border rounded border-gray-300"
+								name="connectionType">
+								<option value=""></option>
+								{funcs.map((func) => (
+									<option key={func} value={func}>
+										{func}
+									</option>
+								))}
+							</select>
+							<button
+								onClick={() => handleAddFunction()}
+								className="bg-black text-white px-3 py-1 text-sm rounded mx-2 flex items-center gap-1">
+								<FaRegSquarePlus /> Agregar funcion
+							</button>
+						</div>
+						<div className="divide-y border-y  border-gray-300 px-6">
+							{chatBot.tools.map((toolName) => (
+								<span
+									key={toolName}
+									className="flex items-center gap-2 justify-between py-2 group min-h-12">
+									<p className="w-1/3 capitalize">{toolName.replaceAll('_', ' ')}</p>
+									<div className="w-1/3 flex justify-end">
+										<button
+											onClick={() => handleRemoveConnection(toolName)}
 											className="bg-gray-700 text-white rounded-md p-2 hidden group-hover:block">
 											<FaRegTrashCan />
 										</button>

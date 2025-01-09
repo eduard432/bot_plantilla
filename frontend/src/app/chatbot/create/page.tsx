@@ -68,10 +68,10 @@ export default function EditPage() {
 							}
 						})} className="px-2 py-1 border rounded border-gray-300" name="model">
 							<option>gpt-3.5-turbo</option>
-							<option>gpt4-turbo</option>
+							<option>gpt-4-turbo</option>
 							<option>gpt-4</option>
 							<option>gpt-4o</option>
-						</select>
+						</select>	
 					</div>
 					<div className="flex flex-col gap-2">
 						<label htmlFor="initialPrompt">Mensaje Inicial:</label>

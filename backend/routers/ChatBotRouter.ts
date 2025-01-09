@@ -4,6 +4,7 @@ import { getDatabase } from '../utils/mongodb'
 import { ObjectId, UpdateFilter } from 'mongodb'
 import { Chat } from '../types/Chat'
 import pickBy from 'lodash.pickby'
+import { aiPlugins } from '../ai/plugins'
 
 const ChatBotRouter = Router()
 
@@ -25,7 +26,8 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 			initialPrompt,
 			defaultChatId: chatId,
 			connections: {},
-			chats: []
+			chats: [],
+			tools: [],
 		}
 		const chatBotResult = await chatBotCollection.insertOne(chatBot)
 
@@ -151,6 +153,66 @@ const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, res) => 
 	}
 }
 
+const handleGetPlugins: RequestHandler = async (req, res) => {
+	try {
+		console.log('EXECCC!!!')
+		const plugins = Object.keys(aiPlugins)
+
+		res.json({plugins})
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
+	}
+}
+
+const handleAddPlugin: RequestHandler<{}, {}, { botId: string; plugin: string }> = async (req, res) => {
+	try {
+		const { botId, plugin } = req.body
+
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
+		const objectId = new ObjectId(botId)
+
+		const query = {
+			_id: objectId,
+			tools: { $nin: [plugin] },
+		}
+
+
+		const update = {
+			$push: {
+				tools: plugin,
+			},
+		}
+
+		const result = await collection.updateOne(query, update)
+
+		console.log({result})
+
+		if (result.modifiedCount > 0) {
+			res.json({
+				msg: 'Chatbot updated!!!',
+			})
+		} else {
+			res.json({
+				msg: 'Chatbot not updated'
+			})
+		}
+		
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
+	}
+}
+
 const handleAddConnection: RequestHandler<
 	{},
 	{},
@@ -244,6 +306,9 @@ const handleDeleteConnection: RequestHandler<
 	}
 }
 
+ChatBotRouter.get('/plugins', handleGetPlugins)
+ChatBotRouter.post('/plugins', handleAddPlugin)
+
 ChatBotRouter.post('/', handleCreateChatBot)
 ChatBotRouter.get('/all', handleGetChatbots)
 ChatBotRouter.get('/:id', handleGetChatbot)
@@ -252,5 +317,7 @@ ChatBotRouter.delete('/:id', handleDeleteChatbot)
 
 ChatBotRouter.post('/connection', handleAddConnection)
 ChatBotRouter.post('/connection/delete', handleDeleteConnection)
+
+
 
 export default ChatBotRouter

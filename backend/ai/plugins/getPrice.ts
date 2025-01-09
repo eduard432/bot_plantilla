@@ -16,11 +16,11 @@ const getPriceTool: ChatCompletionTool = {
             required: ["productName"],
             additionalProperties: false,
         }
-    }
+    },
 }
 
-async function getPrice () {
-
+async function getPrice (productName: string) {
+    return "$100"
 }
 
 export {

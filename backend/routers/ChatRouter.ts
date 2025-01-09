@@ -6,6 +6,7 @@ import { ChatBot } from '../types/ChatBot'
 import { ChatGetInfo } from '../types/Api'
 import { ChatCompletionMessageParam } from 'openai/resources'
 import { openai } from '../ai/openai'
+import { aiPlugins } from '../ai/plugins'
 
 const ChatRouter = Router()
 
@@ -105,9 +106,6 @@ const handleSearchChat: RequestHandler<
 > = async (req, res) => {
 	try {
 		const { botId, userId } = req.query
-
-		console.log({ botId, userId })
-
 		const db = getDatabase()
 		const chatCollection = db.collection<Chat>('chat')
 
@@ -160,7 +158,7 @@ const handleChat: RequestHandler<
 			})
 
 			if (chatBotResult) {
-				const { model, initialPrompt, name } = chatBotResult
+				const { model, initialPrompt, name, tools: toolsId } = chatBotResult
 
 				const conversation: ChatCompletionMessageParam[] = [
 					{
@@ -173,19 +171,38 @@ const handleChat: RequestHandler<
 					...messages,
 				]
 
+				const tools = chatBotResult.tools.map((toolId) => {
+					const tool = aiPlugins[toolId].schema
+					return tool
+				})
+
 				const completion = await openai.chat.completions.create({
 					model,
 					messages: conversation,
+					tools,
 				})
 
-				const response = completion.choices[0].message.content
+				let responseText = ''
+
+				responseText = completion.choices[0].message.content || ''
 
 				const newConversation = [...messages]
 
-				if (response) {
+				
+
+				console.log({completion: JSON.stringify(completion)})
+
+				if(completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
+					const toolCall = completion.choices[0].message.tool_calls[0]
+					const {...args} = JSON.parse(toolCall.function.arguments)
+					const pluginResult = await aiPlugins[toolCall.function.name].func(args)
+					responseText = pluginResult
+				}
+
+				if (responseText) {
 					newConversation.push({
 						role: 'assistant',
-						content: response,
+						content: responseText,
 					})
 				}
 
@@ -201,7 +218,7 @@ const handleChat: RequestHandler<
 				)
 
 				res.json({
-					response: response,
+					response: responseText,
 				})
 			}
 		} else {
