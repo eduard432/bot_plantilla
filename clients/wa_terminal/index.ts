@@ -1,7 +1,7 @@
 import { Client, LocalAuth } from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal'
 import dotenv from 'dotenv'
-import { setupSettings, defaultMenu, saveInitialSettings } from './menus'
+import { messageHandler } from './handlers/messasgeHandler'
 
 dotenv.config()
 
@@ -10,10 +10,9 @@ const client = new Client({
 })
 
 client.once('ready', async () => {
-    await saveInitialSettings(client)
     console.clear()
     console.log('Client is ready!!')
-    await setupSettings(client)
+
 })
 
 client.once('disconnected', () => {
@@ -25,4 +24,7 @@ client.on('qr', (qrString) => {
     qrcode.generate(qrString, {small: true})
 })
 
-defaultMenu(client)
+client.on('message', messageHandler)
+
+// Start the client
+client.initialize()

@@ -6,3 +6,4 @@ auth_session
 .wwebjs_cache
 .wwebjs_auth
 settings.json
+response_memory.json

@@ -16,6 +16,7 @@ export interface ChatBot {
     initialPrompt: string
     defaultChatId?: string
     connections: Connections
+    id: string
 }
 
 export interface ChatBotRecord extends ChatBot {

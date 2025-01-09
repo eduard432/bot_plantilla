@@ -25,6 +25,7 @@ const handleCreateChatBot: RequestHandler<{}, {}, ChatBot> = async (req, res) =>
 			initialPrompt,
 			defaultChatId: chatId,
 			connections: {},
+			chats: []
 		}
 		const chatBotResult = await chatBotCollection.insertOne(chatBot)
 
