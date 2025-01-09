@@ -138,6 +138,7 @@ const handleChat: RequestHandler<
 	{ messages: Message[]; contactName?: string }
 > = async (req, res) => {
 	try {
+		console.log('Chat request:', req.body)
 		const { chatId } = req.params
 		const { messages, contactName } = req.body
 
@@ -188,14 +189,17 @@ const handleChat: RequestHandler<
 
 				const newConversation = [...messages]
 
-				
 
-				console.log({completion: JSON.stringify(completion)})
-
-				if(completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
+				if (
+					completion.choices[0].message.tool_calls &&
+					completion.choices[0].message.tool_calls.length > 0
+				) {
 					const toolCall = completion.choices[0].message.tool_calls[0]
-					const {...args} = JSON.parse(toolCall.function.arguments)
-					const pluginResult = await aiPlugins[toolCall.function.name].func(args)
+					const args = JSON.parse(toolCall.function.arguments)
+					const pluginResult = await aiPlugins[toolCall.function.name].func.apply(
+						null,
+						Object.values(args)
+					)
 					responseText = pluginResult
 				}
 
