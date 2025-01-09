@@ -4,7 +4,8 @@ import { getSearchChat, handleChat, newChat } from '../api/apiService'
 import { ENV } from '../env'
 
 export const messageHandler = async (message: WAWebJS.Message) => {
-	const phone = message.from
+	try {
+		const phone = message.from
 	console.log(`[CLIENT]: New message: ${message.id.id} - from - ${phone}`)
 
 	// if(!settings.validContacts.includes(phone) && settings.validContacts !== 'all' ) return
@@ -25,6 +26,7 @@ export const messageHandler = async (message: WAWebJS.Message) => {
 	const botId = ENV.CHATBOT_ID || ''
 	console.log({botId})
 	const chatServerResponse = await getSearchChat(message.from, botId)
+
 	let chatBotId: string
 
 	const content = message.body
@@ -45,4 +47,7 @@ export const messageHandler = async (message: WAWebJS.Message) => {
 
 	if (!completion) return
 	chat.sendMessage(completion.response)
+	} catch (error) {
+		console.log(error)
+	}
 }
