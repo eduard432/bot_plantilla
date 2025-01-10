@@ -21,7 +21,6 @@ const getPriceTool: ChatCompletionTool = {
 }
 
 async function getPrice(productName: string) {
-    console.log({productName})
 	const legoPricesString = `Bloque básico 2x4 (rojo): $0.25
         Placa 4x4 (azul): $0.50
         Rueda pequeña (con neumático): $1.00

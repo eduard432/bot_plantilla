@@ -82,7 +82,7 @@ const Functions = ({ chatBot, setChatBot }: ConnectionsPageParams) => {
 					<option value=""></option>
 					{funcs.filter((func) => !chatBot.tools.includes(func)).map((func) => (
 						<option className="capitalize" key={func} value={func}>
-							{func}
+							{func.replaceAll('_', ' ')}
 						</option>
 					))}
 				</select>

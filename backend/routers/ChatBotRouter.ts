@@ -155,7 +155,7 @@ const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, res) => 
 
 const handleGetPlugins: RequestHandler = async (req, res) => {
 	try {
-		const plugins = Object.keys(aiPlugins).map((plugin) => plugin.replace(/_/g, ' '))
+		const plugins = Object.keys(aiPlugins)
 
 		res.json({plugins})
 	} catch (error) {

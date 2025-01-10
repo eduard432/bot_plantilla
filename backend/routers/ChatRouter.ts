@@ -4,7 +4,7 @@ import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
 import { ChatBot } from '../types/ChatBot'
 import { ChatGetInfo } from '../types/Api'
-import { ChatCompletionMessageParam } from 'openai/resources'
+import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources'
 import { openai } from '../ai/openai'
 import { aiPlugins } from '../ai/plugins'
 
@@ -30,7 +30,6 @@ const handleAddChat: RequestHandler<
 			messages: [],
 		})
 
-		console.log('Chat insert result:', chatResult)
 
 		if (chatResult) {
 			const chatBotResult = await chatBotCollection.updateOne(
@@ -38,7 +37,6 @@ const handleAddChat: RequestHandler<
 				{ $push: { chats: chatResult.insertedId } }
 			)
 
-			console.log('Chatbot update result:', chatBotResult)
 
 			if (chatBotResult.modifiedCount > 0) {
 				res.json({
@@ -138,7 +136,6 @@ const handleChat: RequestHandler<
 	{ messages: Message[]; contactName?: string }
 > = async (req, res) => {
 	try {
-		console.log('Chat request:', req.body)
 		const { chatId } = req.params
 		const { messages, contactName } = req.body
 
@@ -172,16 +169,24 @@ const handleChat: RequestHandler<
 					...messages,
 				]
 
-				const tools = chatBotResult.tools.map((toolId) => {
+
+				const tools = toolsId.map((toolId) => {
 					const tool = aiPlugins[toolId].schema
 					return tool
 				})
 
-				const completion = await openai.chat.completions.create({
+				const completionOptions: {
+					model: string,
+					messages: ChatCompletionMessageParam[],
+					tools?: ChatCompletionTool[]
+				} = {
 					model,
 					messages: conversation,
-					tools,
-				})
+				}
+
+				if(tools.length > 0) completionOptions.tools = tools
+
+				const completion = await openai.chat.completions.create(completionOptions)
 
 				let responseText = ''
 
@@ -200,7 +205,26 @@ const handleChat: RequestHandler<
 						null,
 						Object.values(args)
 					)
-					responseText = pluginResult
+
+					const pluginResponse: ChatCompletionMessageParam = {
+						role: 'system',
+						content: `${JSON.stringify(pluginResult)}`
+					}
+
+
+					conversation.push(pluginResponse)
+					newConversation.push({
+						role: 'system',
+						content: `${JSON.stringify(pluginResult)}`
+					})
+
+					const nextCompletion = await openai.chat.completions.create({
+						model,
+						messages: conversation,
+					})
+
+
+					responseText = nextCompletion.choices[0].message.content || ''
 				}
 
 				if (responseText) {
