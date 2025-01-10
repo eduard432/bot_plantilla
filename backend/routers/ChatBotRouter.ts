@@ -155,8 +155,7 @@ const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, res) => 
 
 const handleGetPlugins: RequestHandler = async (req, res) => {
 	try {
-		console.log('EXECCC!!!')
-		const plugins = Object.keys(aiPlugins)
+		const plugins = Object.keys(aiPlugins).map((plugin) => plugin.replace(/_/g, ' '))
 
 		res.json({plugins})
 	} catch (error) {
@@ -203,6 +202,46 @@ const handleAddPlugin: RequestHandler<{}, {}, { botId: string; plugin: string }>
 			})
 		}
 		
+	} catch (error) {
+		console.log(error)
+		res
+			.json({
+				msg: 'Error',
+			})
+			.status(501)
+	}
+}
+
+const handleDeletePlugin: RequestHandler<{}, {}, { botId: string; plugin: string }> = async (req, res) => {
+	try {
+		const { botId, plugin } = req.body
+
+		const db = getDatabase()
+		const collection = db.collection<ChatBot>('chatbot')
+		const objectId = new ObjectId(botId)
+
+		const query = {
+			_id: objectId,
+			tools: { $in: [plugin] },
+		}
+
+		const update = {
+			$pull: {
+				tools: plugin,
+			},
+		}
+
+		const result = await collection.updateOne(query, update)
+
+		if (result.modifiedCount > 0) {
+			res.json({
+				msg: 'Chatbot updated!!!',
+			})
+		} else {
+			res.json({
+				msg: 'Chatbot not updated'
+			}).status(400)
+		}
 	} catch (error) {
 		console.log(error)
 		res
@@ -308,6 +347,7 @@ const handleDeleteConnection: RequestHandler<
 
 ChatBotRouter.get('/plugins', handleGetPlugins)
 ChatBotRouter.post('/plugins', handleAddPlugin)
+ChatBotRouter.delete('/plugins', handleDeletePlugin)
 
 ChatBotRouter.post('/', handleCreateChatBot)
 ChatBotRouter.get('/all', handleGetChatbots)

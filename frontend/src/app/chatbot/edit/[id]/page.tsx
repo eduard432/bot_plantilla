@@ -13,6 +13,8 @@ import {
 } from 'react-icons/fa6'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import ForwardButton from '@/components/ForwardButton'
+import Connections from './Connections'
+import Functions from './Functions'
 
 type InputData = {
 	name: string
@@ -22,19 +24,8 @@ type InputData = {
 export default function EditPage() {
 	const params = useParams<{ id: string }>()
 	const [chatBot, setChatBot] = useState<ChatBotRecord>()
-	const [selectedConn, setSelectedConn] = useState<string>('')
-	const [selectedFunc, setSelectedFunc] = useState<string>('')
-	const [funcs, setFuncs] = useState<string[]>([])
-
+	
 	const router = useRouter()
-
-	const handleGetFunctions = async () => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/plugins`)
-		if (response.ok) {
-			const data: {plugins: string[]} = await response.json()
-			setFuncs(data.plugins)
-		}
-	}
 
 	const handleGetData = async () => {
 		const response = await fetch(
@@ -48,7 +39,6 @@ export default function EditPage() {
 
 	useEffect(() => {
 		handleGetData()
-		handleGetFunctions()
 	}, [])
 
 	const {
@@ -93,89 +83,9 @@ export default function EditPage() {
 		}
 	}
 
-	const handleAddFunction = async () => {
-		if (!chatBot) return
-		if (selectedFunc == '') return
-		if (chatBot.tools.includes(selectedFunc)) return
-		const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/plugins`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				botId: chatBot?._id,
-				plugin: selectedFunc,
-			}),
-		})
-		if (result.ok) {
-			const newData = {
-				...chatBot,
-				tools: [...chatBot.tools, selectedFunc],
-			}
-			setChatBot(newData)
-			setSelectedFunc('')
-		}
-	}
+	
 
-	const handleAddConnection = async () => {
-		if (!chatBot) return
-		if (selectedConn == '') return
-		if (Object.keys(chatBot.connections).includes(selectedConn)) return
-		const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot/connection/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				id: chatBot?._id,
-				type: selectedConn,
-			}),
-		})
-		if (result.ok) {
-			const newData = {
-				...chatBot,
-				connections: {
-					...chatBot.connections,
-					[selectedConn]: {
-						type: selectedConn,
-						chatsId: [],
-					},
-				},
-			}
-			setChatBot(newData)
-			setSelectedConn('')
-		}
-	}
-
-	const handleRemoveConnection = async (type: string) => {
-		if (!chatBot) return
-		const body = JSON.stringify({
-			id: chatBot._id,
-			type,
-		})
-		console.log({ body })
-		const result = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/connection/delete`,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body,
-			}
-		)
-
-		if (result.ok) {
-			// Eliminamos la propiedad del objeto en el state
-			const { [type]: _, ...newConnections } = chatBot.connections
-
-			const newData = {
-				...chatBot,
-				connections: newConnections,
-			}
-			setChatBot(newData)
-		}
-	}
+	
 
 	const handleDeleteData = async () => {
 		const response = await fetch(
@@ -271,78 +181,8 @@ export default function EditPage() {
 							</div>
 						</form>
 						<hr />
-						<h4 className="text-xl font-semibold my-2">Conexiones:</h4>
-						<div className="my-4 flex">
-							<select
-								value={selectedConn}
-								onChange={(event) => setSelectedConn(event.target.value)}
-								className="px-2 py-1 border rounded border-gray-300"
-								name="connectionType">
-								<option value=""></option>
-								<option value="wa">WhatsApp</option>
-								<option value="disc">Discord</option>
-							</select>
-							<button
-								onClick={() => handleAddConnection()}
-								className="bg-black text-white px-3 py-1 text-sm rounded mx-2 flex items-center gap-1">
-								<FaRegSquarePlus /> Agregar conexión
-							</button>
-						</div>
-						<div className="divide-y border-y  border-gray-300 px-6">
-							{Object.keys(chatBot.connections).map((type) => (
-								<span
-									key={type}
-									className="flex items-center gap-2 justify-between py-2 group min-h-12">
-									<p className="w-1/3">Cliente: {type}</p>
-									<p className="w-1/3 text-start">
-										Chats: {chatBot.connections[type].chatsId.length}
-									</p>
-									<div className="w-1/3 flex justify-end">
-										<button
-											onClick={() => handleRemoveConnection(type)}
-											className="bg-gray-700 text-white rounded-md p-2 hidden group-hover:block">
-											<FaRegTrashCan />
-										</button>
-									</div>
-								</span>
-							))}
-						</div>
-						<h4 className="text-xl font-semibold my-2">Funciones:</h4>
-						<div className="my-4 flex">
-							<select
-								value={selectedFunc}
-								onChange={(event) => setSelectedFunc(event.target.value)}
-								className="px-2 py-1 border rounded border-gray-300"
-								name="connectionType">
-								<option value=""></option>
-								{funcs.map((func) => (
-									<option key={func} value={func}>
-										{func}
-									</option>
-								))}
-							</select>
-							<button
-								onClick={() => handleAddFunction()}
-								className="bg-black text-white px-3 py-1 text-sm rounded mx-2 flex items-center gap-1">
-								<FaRegSquarePlus /> Agregar funcion
-							</button>
-						</div>
-						<div className="divide-y border-y  border-gray-300 px-6">
-							{chatBot.tools.map((toolName) => (
-								<span
-									key={toolName}
-									className="flex items-center gap-2 justify-between py-2 group min-h-12">
-									<p className="w-1/3 capitalize">{toolName.replaceAll('_', ' ')}</p>
-									<div className="w-1/3 flex justify-end">
-										<button
-											onClick={() => handleRemoveConnection(toolName)}
-											className="bg-gray-700 text-white rounded-md p-2 hidden group-hover:block">
-											<FaRegTrashCan />
-										</button>
-									</div>
-								</span>
-							))}
-						</div>
+						<Connections chatBot={chatBot} setChatBot={setChatBot} />
+						<Functions chatBot={chatBot} setChatBot={setChatBot} />
 					</section>
 				</>
 			)}
