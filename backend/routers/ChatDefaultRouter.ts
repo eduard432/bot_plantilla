@@ -135,6 +135,7 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 ) => {
 	try {
 		const { id, messages } = req.body
+		console.log({id})
 		const objectId = new ObjectId(id)
 
 		const db = getDatabase()

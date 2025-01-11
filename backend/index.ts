@@ -16,7 +16,7 @@ app.disable('x-powered-by')
 app.use(express.json(), cors(), morgan('dev'))
 
 app.use('/chat', ChatRouter)
-app.use('/chat/default', ChatDefaultRouter)
+app.use('/default_chat', ChatDefaultRouter)
 app.use('/chatbot', ChatBotRouter)
 
 app.listen(PORT, async () => {

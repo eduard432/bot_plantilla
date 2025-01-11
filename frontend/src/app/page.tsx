@@ -42,7 +42,7 @@ export default function Home() {
 		if (defaultChatId) {
 			router.push(`/chat/${defaultChatId}`)
 		} else {
-			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/default/add/${id}`, {
+			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/default_chat/add/${id}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
