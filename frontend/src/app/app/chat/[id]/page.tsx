@@ -66,7 +66,7 @@ export default function ChatPage() {
 					<section className="w-2/3 mx-auto my-4 flex justify-end" >
 						<div className="flex gap-1">
 							<button
-								onClick={() => router.push(`/chatbot/edit/${chatInfo.chatBot._id}`)}
+								onClick={() => router.push(`/app/chatbot/edit/${chatInfo.chatBot._id}`)}
 								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
 								<FaPencil /> Editar ChatBot
 							</button>

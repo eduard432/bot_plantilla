@@ -34,7 +34,7 @@ export default function EditPage() {
 			body: JSON.stringify(inputData)
 		})
 		if (response.ok) {
-			router.push('/')
+			router.push('/app')
 		}
 	}
 
@@ -88,7 +88,7 @@ export default function EditPage() {
 						<button
 							type="button"
 							className="rounded px-3 py-2 border border-gray-300 disabled:opacity-60"
-							onClick={() => router.push('/')}>
+							onClick={() => router.push('/app')}>
 							Cancelar
 						</button>
 						<button

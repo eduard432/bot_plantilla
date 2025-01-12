@@ -95,7 +95,7 @@ export default function EditPage() {
 			}
 		)
 		if (response.ok) {
-			router.push('/')
+			router.push('/app')
 		}
 	}
 
@@ -113,7 +113,7 @@ export default function EditPage() {
 								<FaCopy /> Copiar Id
 							</button>
 							<button
-								onClick={() => router.push(`/chat/${chatBot.defaultChatId}`)}
+								onClick={() => router.push(`/app/chat/${chatBot.defaultChatId}`)}
 								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
 								<FaRegMessage /> Chat
 							</button>
