@@ -15,6 +15,7 @@ import { useForm, SubmitHandler } from 'react-hook-form'
 import ForwardButton from '@/components/ForwardButton'
 import Connections from './Connections'
 import Functions from './Functions'
+import Stats from './Stats'
 
 type InputData = {
 	name: string
@@ -183,6 +184,7 @@ export default function EditPage() {
 						<hr />
 						<Connections chatBot={chatBot} setChatBot={setChatBot} />
 						<Functions chatBot={chatBot} setChatBot={setChatBot} />
+						<Stats chatBot={chatBot} />
 					</section>
 				</>
 			)}

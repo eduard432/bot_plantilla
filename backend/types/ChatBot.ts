@@ -1,5 +1,4 @@
 import { ObjectId } from 'mongodb'
-import { ChatCompletionTool } from 'openai/resources'
 
 export type ConnectionType = 'wa' | 'disc'
 
@@ -19,4 +18,5 @@ export interface ChatBot {
     defaultChatId: ObjectId
     connections: Connections
     tools: string[]
+    usedTokens: number
 }

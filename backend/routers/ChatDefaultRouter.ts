@@ -153,7 +153,17 @@ const handleChat: RequestHandler<{}, {}, { id: string; messages: Message[] }> = 
 			model: openai(chatBotResult.model),
 			messages,
 			system: chatBotResult.initialPrompt,
-			onFinish: async ({ text, response }) => {
+			onFinish: async ({ text, usage }) => {
+				await chatBotCollection.updateOne(
+					{
+						_id: chatResult.chatBotId,
+					},
+					{
+						$inc: {
+							usedTokens: usage.totalTokens,
+						}
+					}
+				)
 				await chatCollection.updateOne(
 					{ _id: objectId },
 					{

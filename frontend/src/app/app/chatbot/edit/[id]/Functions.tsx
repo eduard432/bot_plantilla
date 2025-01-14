@@ -8,8 +8,6 @@ type ConnectionsPageParams = {
 }
 
 const Functions = ({ chatBot, setChatBot }: ConnectionsPageParams) => {
-	
-
 	const [funcs, setFuncs] = useState<string[]>([])
 	const [selectedFunc, setSelectedFunc] = useState<string>('')
 

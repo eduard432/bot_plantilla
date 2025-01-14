@@ -30,13 +30,11 @@ const handleAddChat: RequestHandler<
 			messages: [],
 		})
 
-
 		if (chatResult) {
 			const chatBotResult = await chatBotCollection.updateOne(
 				{ _id: chatBotObjectId },
 				{ $push: { chats: chatResult.insertedId } }
 			)
-
 
 			if (chatBotResult.modifiedCount > 0) {
 				res.json({
@@ -169,31 +167,42 @@ const handleChat: RequestHandler<
 					...messages,
 				]
 
-
 				const tools = toolsId.map((toolId) => {
 					const tool = aiPlugins[toolId].schema
 					return tool
 				})
 
 				const completionOptions: {
-					model: string,
-					messages: ChatCompletionMessageParam[],
+					model: string
+					messages: ChatCompletionMessageParam[]
 					tools?: ChatCompletionTool[]
 				} = {
 					model,
 					messages: conversation,
 				}
 
-				if(tools.length > 0) completionOptions.tools = tools
+				if (tools.length > 0) completionOptions.tools = tools
 
 				const completion = await openai.chat.completions.create(completionOptions)
+
+				if (completion.usage && completion.usage?.total_tokens > 0) {
+					await chatCollection.updateOne(
+						{
+							_id: chatObjectId,
+						},
+						{
+							$inc: {
+								usedTokens: completion.usage.total_tokens,
+							},
+						}
+					)
+				}
 
 				let responseText = ''
 
 				responseText = completion.choices[0].message.content || ''
 
 				const newConversation = [...messages]
-
 
 				if (
 					completion.choices[0].message.tool_calls &&
@@ -208,14 +217,13 @@ const handleChat: RequestHandler<
 
 					const pluginResponse: ChatCompletionMessageParam = {
 						role: 'system',
-						content: `${JSON.stringify(pluginResult)}`
+						content: `${JSON.stringify(pluginResult)}`,
 					}
-
 
 					conversation.push(pluginResponse)
 					newConversation.push({
 						role: 'system',
-						content: `${JSON.stringify(pluginResult)}`
+						content: `${JSON.stringify(pluginResult)}`,
 					})
 
 					const nextCompletion = await openai.chat.completions.create({
@@ -223,6 +231,18 @@ const handleChat: RequestHandler<
 						messages: conversation,
 					})
 
+					if (nextCompletion.usage && nextCompletion.usage?.total_tokens > 0) {
+						await chatCollection.updateOne(
+							{
+								_id: chatObjectId,
+							},
+							{
+								$inc: {
+									usedTokens: nextCompletion.usage.total_tokens,
+								},
+							}
+						)
+					}
 
 					responseText = nextCompletion.choices[0].message.content || ''
 				}
