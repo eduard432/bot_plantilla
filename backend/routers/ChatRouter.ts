@@ -6,7 +6,16 @@ import { ChatBot } from '../types/ChatBot'
 import { ChatGetInfo } from '../types/Api'
 import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources'
 import { openai } from '../ai/openai'
+import { openai as openaiSdk } from '@ai-sdk/openai'
 import { aiPlugins } from '../ai/plugins'
+import {
+	CoreMessage,
+	Message as AIMessage,
+	generateText,
+	tool as AiTool,
+	CoreTool,
+	tool,
+} from 'ai'
 
 const ChatRouter = Router()
 
@@ -156,117 +165,80 @@ const handleChat: RequestHandler<
 			if (chatBotResult) {
 				const { model, initialPrompt, name, tools: toolsId } = chatBotResult
 
-				const conversation: ChatCompletionMessageParam[] = [
-					{
-						role: 'system',
-						content: `${name} - ${initialPrompt},
-					${contactName && 'Acualmente estás ayudando a: ' + contactName}
-					`,
-					},
-					...chatResult.messages,
-					...messages,
-				]
+				const conv: ChatCompletionMessageParam[] = [...chatResult.messages, ...messages]
 
-				const tools = toolsId.map((toolId) => {
-					const tool = aiPlugins[toolId].schema
-					return tool
+				const newConv: CoreMessage[] = conv.map((message) => {
+					return {
+						role: message.role === 'user' ? 'user' : 'assistant',
+						content: typeof message.content === 'string' ? message.content : '',
+					}
 				})
 
-				const completionOptions: {
-					model: string
-					messages: ChatCompletionMessageParam[]
-					tools?: ChatCompletionTool[]
-				} = {
-					model,
-					messages: conversation,
+				const t: { [key: string]: CoreTool } = {}
+
+				for (let i = 0; i < toolsId.length; i++) {
+					const toolId = toolsId[i]
+					const tool = aiPlugins[toolId]
+					t[toolId] = tool
 				}
 
-				if (tools.length > 0) completionOptions.tools = tools
+				console.log({tools: JSON.stringify(t)})
 
-				const completion = await openai.chat.completions.create(completionOptions)
+				const { text } = await generateText({
+					model: openaiSdk(model),
+					messages: newConv,
+					system: `${name} - ${initialPrompt},
+					${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
+					onStepFinish: async ({ usage, response }) => {
+						const { messages: aiMessages } = response
+						const parsedMessages: Message[] = []
 
-				if (completion.usage && completion.usage?.total_tokens > 0) {
-					await chatCollection.updateOne(
-						{
-							_id: chatObjectId,
-						},
-						{
-							$inc: {
-								usedTokens: completion.usage.total_tokens,
-							},
+						for (let i = 0; i < aiMessages.length; i++) {
+							const { content, role: untypedRole } = aiMessages[i]
+							const role = untypedRole === 'assistant' ? untypedRole : 'system'
+							if (typeof content === 'string') {
+								parsedMessages.push({
+									role,
+									content,
+								})
+							} else {
+								for (let j = 0; j < content.length; j++) {
+									const element = content[j]
+									if (element.type === 'text' && element.text) {
+										parsedMessages.push({
+											role,
+											content: element.text,
+										})
+									} else if (element.type === 'tool-result' && element.result) {
+										parsedMessages.push({
+											role,
+											content: `${element.result}`,
+										})
+									}
+								}
+							}
 						}
-					)
-				}
 
-				let responseText = ''
-
-				responseText = completion.choices[0].message.content || ''
-
-				const newConversation = [...messages]
-
-				if (
-					completion.choices[0].message.tool_calls &&
-					completion.choices[0].message.tool_calls.length > 0
-				) {
-					const toolCall = completion.choices[0].message.tool_calls[0]
-					const args = JSON.parse(toolCall.function.arguments)
-					const pluginResult = await aiPlugins[toolCall.function.name].func.apply(
-						null,
-						Object.values(args)
-					)
-
-					const pluginResponse: ChatCompletionMessageParam = {
-						role: 'system',
-						content: `${JSON.stringify(pluginResult)}`,
-					}
-
-					conversation.push(pluginResponse)
-					newConversation.push({
-						role: 'system',
-						content: `${JSON.stringify(pluginResult)}`,
-					})
-
-					const nextCompletion = await openai.chat.completions.create({
-						model,
-						messages: conversation,
-					})
-
-					if (nextCompletion.usage && nextCompletion.usage?.total_tokens > 0) {
 						await chatCollection.updateOne(
+							{ _id: chatObjectId },
 							{
-								_id: chatObjectId,
-							},
-							{
+								$push: {
+									messages: {
+										$each: [...messages, ...parsedMessages],
+									},
+								},
 								$inc: {
-									usedTokens: nextCompletion.usage.total_tokens,
+									usedTokens: usage.totalTokens,
 								},
 							}
 						)
-					}
-
-					responseText = nextCompletion.choices[0].message.content || ''
-				}
-
-				if (responseText) {
-					newConversation.push({
-						role: 'assistant',
-						content: responseText,
-					})
-				}
-
-				chatCollection.updateOne(
-					{ _id: chatObjectId },
-					{
-						$push: {
-							messages: {
-								$each: newConversation,
-							},
-						},
-					}
-				)
+					},
+					tools: t,
+					maxSteps: 3,
+				})
 
 				res.json({
-					response: responseText,
+					response: text,
 				})
 			}
 		} else {

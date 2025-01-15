@@ -1,5 +1,7 @@
 import { ChatCompletionTool } from 'openai/resources'
 import { openai } from '../openai'
+import { tool } from 'ai'
+import { z } from 'zod'
 
 const getPriceTool: ChatCompletionTool = {
 	type: 'function',
@@ -20,7 +22,19 @@ const getPriceTool: ChatCompletionTool = {
 	},
 }
 
-async function getPrice(productName: string) {
+export const newGetPriceTool = tool({
+	description: 'Obtiene el precio de un producto.',
+	parameters: z.object({
+		productName: z.string({
+			description: 'El nombre del producto del que obtener el precio.',
+		}),
+	}),
+	execute: async ({ productName }) => {
+		return getPrice(productName)
+	},
+})
+
+const getPrice = async (productName: string) => {
 	const legoPricesString = `Bloque básico 2x4 (rojo): $0.25
         Placa 4x4 (azul): $0.50
         Rueda pequeña (con neumático): $1.00

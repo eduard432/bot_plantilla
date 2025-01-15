@@ -1,8 +1,7 @@
-import { ChatCompletionTool } from 'openai/resources';
-import { getPrice, getPriceTool } from './getPrice'
+import { CoreTool } from "ai";
+import { newGetPriceTool } from "./getPrice";
+import { getProductsTool } from "./getProduts/getProducts";
 
-export const aiPlugins: {
-	[key: string]: { func: Function; schema: ChatCompletionTool }
-} = {
-	'get_price': { func: getPrice, schema: getPriceTool },
+export const aiPlugins: {[key: string]: CoreTool} = {
+    'get_products': getProductsTool
 }
