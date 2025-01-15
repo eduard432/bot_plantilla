@@ -34,3 +34,8 @@ El objetivo de este proyecto, es crear una plataforma de creación de "chatbots"
 - HeadlessUI
 - React Icons
 - Typescript
+
+## Licencia
+
+Este proyecto está licenciado bajo la licencia MIT.  
+© 2025 Dragoorum. Todos los derechos reservados.
