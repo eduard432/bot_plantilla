@@ -1,4 +1,6 @@
+import { CoreMessage, CoreUserMessage } from "ai"
 import { ObjectId } from "mongodb"
+
 
 export interface Message {
     role: 'system' | 'user' | 'assistant',
@@ -7,6 +9,6 @@ export interface Message {
 
 export interface Chat {
     chatBotId: ObjectId,
-    messages: Message[]
+    messages: CoreMessage[]
     userId?: string
 }

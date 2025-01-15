@@ -1,21 +1,11 @@
 import { RequestHandler, Router } from 'express'
-import { Chat, Message } from '../types/Chat'
+import { Chat } from '../types/Chat'
 import { getDatabase } from '../utils/mongodb'
 import { ObjectId } from 'mongodb'
 import { ChatBot } from '../types/ChatBot'
-import { ChatGetInfo } from '../types/Api'
-import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources'
-import { openai } from '../ai/openai'
 import { openai as openaiSdk } from '@ai-sdk/openai'
 import { aiPlugins } from '../ai/plugins'
-import {
-	CoreMessage,
-	Message as AIMessage,
-	generateText,
-	tool as AiTool,
-	CoreTool,
-	tool,
-} from 'ai'
+import { CoreMessage, generateText, CoreTool, CoreUserMessage } from 'ai'
 
 const ChatRouter = Router()
 
@@ -80,7 +70,7 @@ const handleGetChatInfoById: RequestHandler<{ chatId: string }> = async (req, re
 		if (chatResult) {
 			const chatBotResult = await chatBotCollection.findOne({ _id: chatResult.chatBotId })
 			if (chatBotResult) {
-				const result: ChatGetInfo = {
+				const result = {
 					chatBot: chatBotResult,
 					messages: chatResult.messages,
 				}
@@ -140,11 +130,17 @@ const handleSearchChat: RequestHandler<
 const handleChat: RequestHandler<
 	{ chatId: string },
 	{},
-	{ messages: Message[]; contactName?: string }
+	{ messages: string[]; contactName?: string }
 > = async (req, res) => {
 	try {
 		const { chatId } = req.params
-		const { messages, contactName } = req.body
+		const { messages: userMessages, contactName } = req.body
+		const messages: CoreUserMessage[] = userMessages.map((message) => {
+			return {
+				role: 'user',
+				content: message,
+			}
+		})
 
 		const chatObjectId = new ObjectId(chatId)
 
@@ -165,66 +161,30 @@ const handleChat: RequestHandler<
 			if (chatBotResult) {
 				const { model, initialPrompt, name, tools: toolsId } = chatBotResult
 
-				const conv: ChatCompletionMessageParam[] = [...chatResult.messages, ...messages]
+				const conversation: CoreMessage[] = [...chatResult.messages, ...messages]
 
-				const newConv: CoreMessage[] = conv.map((message) => {
-					return {
-						role: message.role === 'user' ? 'user' : 'assistant',
-						content: typeof message.content === 'string' ? message.content : '',
-					}
-				})
-
-				const t: { [key: string]: CoreTool } = {}
+				const tools: { [key: string]: CoreTool } = {}
 
 				for (let i = 0; i < toolsId.length; i++) {
 					const toolId = toolsId[i]
 					const tool = aiPlugins[toolId]
-					t[toolId] = tool
+					tools[toolId] = tool
 				}
-
-				console.log({tools: JSON.stringify(t)})
 
 				const { text } = await generateText({
 					model: openaiSdk(model),
-					messages: newConv,
+					messages: conversation,
 					system: `${name} - ${initialPrompt},
 					${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
 					onStepFinish: async ({ usage, response }) => {
 						const { messages: aiMessages } = response
-						const parsedMessages: Message[] = []
-
-						for (let i = 0; i < aiMessages.length; i++) {
-							const { content, role: untypedRole } = aiMessages[i]
-							const role = untypedRole === 'assistant' ? untypedRole : 'system'
-							if (typeof content === 'string') {
-								parsedMessages.push({
-									role,
-									content,
-								})
-							} else {
-								for (let j = 0; j < content.length; j++) {
-									const element = content[j]
-									if (element.type === 'text' && element.text) {
-										parsedMessages.push({
-											role,
-											content: element.text,
-										})
-									} else if (element.type === 'tool-result' && element.result) {
-										parsedMessages.push({
-											role,
-											content: `${element.result}`,
-										})
-									}
-								}
-							}
-						}
 
 						await chatCollection.updateOne(
 							{ _id: chatObjectId },
 							{
 								$push: {
 									messages: {
-										$each: [...messages, ...parsedMessages],
+										$each: [...messages, ...aiMessages],
 									},
 								},
 								$inc: {
@@ -233,7 +193,7 @@ const handleChat: RequestHandler<
 							}
 						)
 					},
-					tools: t,
+					tools,
 					maxSteps: 3,
 				})
 

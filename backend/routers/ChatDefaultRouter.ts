@@ -69,7 +69,7 @@ const handleGetChatInfo: RequestHandler<{ id: string }> = async (req, res) => {
 		if (chatResult) {
 			const chatBotResult = await chatBotCollection.findOne({ _id: chatResult.chatBotId })
 			if (chatBotResult) {
-				const result: ChatGetInfo = {
+				const result = {
 					chatBot: chatBotResult,
 					messages: chatResult.messages,
 				}
