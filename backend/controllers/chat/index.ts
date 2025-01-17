@@ -1,7 +1,5 @@
-import handleAddChat from './addChat.controller'
-import handleGetChatInfoById from './getChatInfoById.controller'
-import handleSearchChat from './searchChat.controller'
-import handleChat from './chat.controller'
+import handleChat from './handleChat.controller'
+import { handleAddChat, handleGetChatInfoById, handleSearchChat } from './chat.controller'
 
 export {
     handleAddChat,

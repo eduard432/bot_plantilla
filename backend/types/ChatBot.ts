@@ -1,4 +1,6 @@
 import { ObjectId } from 'mongodb'
+import { z } from 'zod'
+import { ChatBotSchema } from '../validators/chatbot.validator'
 
 export type ConnectionType = 'wa' | 'disc'
 
