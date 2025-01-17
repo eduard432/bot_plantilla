@@ -100,7 +100,7 @@ export default function EditPage() {
 						<div className="flex gap-1">
 							<a
 								target="_blank"
-								href={`${process.env.NEXT_PUBLIC_API_URL}/api/chat/link/${chatBot._id}`}
+								href={`${process.env.NEXT_PUBLIC_API_URL}/chat/link/${chatBot._id}`}
 								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
 								<FaLink /> Chat Link
 							</a>
@@ -147,7 +147,7 @@ export default function EditPage() {
 									className="px-2 py-1 border rounded border-gray-300"
 									name="model">
 									<option>gpt-3.5-turbo</option>
-									<option>gpt4-turbo</option>
+									<option>gpt-4-turbo</option>
 									<option>gpt-4</option>
 									<option>gpt-4o</option>
 								</select>

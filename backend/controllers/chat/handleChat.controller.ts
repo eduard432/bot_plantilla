@@ -20,13 +20,18 @@ import { openai } from '@ai-sdk/openai'
 const handleChat: RequestHandler<
 	{ chatId: string },
 	{},
-	{ messages: CoreUserMessage[]; contactName?: string; stream: boolean }
+	{
+		messages: CoreUserMessage[]
+		contactName?: string
+		stream: boolean
+		allMessages: boolean
+	}
 > = async (req, res) => {
 	try {
 		const { chatId } = req.params
-		const { messages, contactName, stream } = req.body
+		const { messages, contactName, stream, allMessages } = req.body
 
-		console.log({messages})
+		console.log({ messages })
 
 		const chatObjectId = new ObjectId(chatId)
 
@@ -47,7 +52,9 @@ const handleChat: RequestHandler<
 			if (chatBotResult) {
 				const { model, initialPrompt, name, tools: toolsId } = chatBotResult
 
-				const conversation: CoreMessage[] = [...chatResult.messages, ...messages]
+				const conversation: CoreMessage[] = !allMessages
+					? [...chatResult.messages, ...messages]
+					: messages
 
 				const tools: { [key: string]: CoreTool } = {}
 
@@ -57,46 +64,82 @@ const handleChat: RequestHandler<
 					tools[toolId] = tool
 				}
 
-				const aiConfig = {
-					model: openai(model),
-					messages: conversation,
-					system: `${name} - ${initialPrompt},
-					${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
-					onStepFinish: async ({
-						usage,
-						response,
-					}: {
-						usage: LanguageModelUsage
-						response: LanguageModelResponseMetadata & {
-							messages: Array<CoreAssistantMessage | CoreToolMessage>
-						}
-					}) => {
-						const { messages: aiMessages } = response
+				console.log({conversation})
 
-						await chatCollection.updateOne(
-							{ _id: chatObjectId },
-							{
-								$push: {
-									messages: {
-										$each: [...messages, ...aiMessages],
-									},
-								},
-								$inc: {
-									usedTokens: usage.totalTokens,
-								},
-							}
-						)
-					},
-					tools,
-					maxSteps: 3,
-				}
+				// const aiConfig = 
 
 				if (stream) {
-					const result = streamText(aiConfig)
+					const result = streamText({
+						model: openai(model),
+						messages: conversation,
+						system: `${name} - ${initialPrompt},
+						${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
+						onFinish: async ({
+							usage,
+							response,
+						}: {
+							usage: LanguageModelUsage
+							response: LanguageModelResponseMetadata & {
+								messages: Array<CoreAssistantMessage | CoreToolMessage>
+							}
+						}) => {
+							const { messages: aiMessages } = response
+							console.log({aiMessages})
+	
+							await chatCollection.updateOne(
+								{ _id: chatObjectId },
+								{
+									$push: {
+										messages: {
+											$each: [messages[0], ...aiMessages],
+										},
+									},
+									$inc: {
+										usedTokens: usage.totalTokens,
+									},
+								}
+							)
+						},
+						tools,
+						maxSteps: 3,
+					})
 
 					result.pipeDataStreamToResponse(res)
 				} else {
-					const { text } = await generateText(aiConfig)
+					const { text } = await generateText({
+						model: openai(model),
+						messages: conversation,
+						system: `${name} - ${initialPrompt},
+						${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
+						onStepFinish: async ({
+							usage,
+							response,
+						}: {
+							usage: LanguageModelUsage
+							response: LanguageModelResponseMetadata & {
+								messages: Array<CoreAssistantMessage | CoreToolMessage>
+							}
+						}) => {
+							const { messages: aiMessages } = response
+							console.log({aiMessages})
+	
+							await chatCollection.updateOne(
+								{ _id: chatObjectId },
+								{
+									$push: {
+										messages: {
+											$each: [messages[0], ...aiMessages],
+										},
+									},
+									$inc: {
+										usedTokens: usage.totalTokens,
+									},
+								}
+							)
+						},
+						tools,
+						maxSteps: 3,
+					})
 
 					res.json({
 						response: text,

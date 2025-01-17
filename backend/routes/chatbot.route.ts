@@ -51,6 +51,6 @@ router.put(
 	validate(updateChatbotsSchema.body),
 	handleUpdateChatbots
 )
-router.delete('/:id', validate(deleteChatbotSchema.params), handleDeleteChatbot)
+router.delete('/:id',  validate(deleteChatbotSchema.params, 'params'), handleDeleteChatbot)
 
 export default router

@@ -83,7 +83,7 @@ export const handleGetChatInfoById: RequestHandler<{ chatId: string }> = async (
 							})
 						} else {
 							content.forEach((subContent) => {
-								if (subContent.type === 'text') {
+								if (subContent.type === 'text' && subContent.text !== "") {
 									messages.push({
 										role,
 										content: subContent.text,
