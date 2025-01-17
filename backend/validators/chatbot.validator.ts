@@ -56,7 +56,7 @@ export const updateChatbotsSchema = {
         model: z.string(),
         name: z.string(),
         initialPrompt: z.string()
-    })
+    }).optional()
 }
 
 export const deleteChatbotSchema = {
