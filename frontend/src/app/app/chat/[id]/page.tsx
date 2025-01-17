@@ -12,12 +12,9 @@ export default function ChatPage() {
 	const { id } = useParams<{ id: string }>()
 
 	const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
-		api: `${process.env.NEXT_PUBLIC_API_URL}/default_chat`,
-		initialMessages: chatInfo?.messages.map(({ _id, ...rest }) => ({
-			id: _id,
-			...rest,
-		})),
-		body: { id },
+		api: `${process.env.NEXT_PUBLIC_API_URL}/chat/${id}`,
+		initialMessages: chatInfo?.messages || [],
+		body: { id, stream: true },
 	})
 
 	const router = useRouter()
@@ -32,7 +29,7 @@ export default function ChatPage() {
 	}, [messages])
 
 	const getChatInfo = async () => {
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/default_chat/info/${id}`)
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/info/${id}`)
 		const data: ChatGetInfo = await response.json()
 		setChatInfo(data)
 	}
@@ -79,7 +76,7 @@ export default function ChatPage() {
 					</section>
 					<section className="rounded border h-4/5 border-gray-300 p-4 w-2/3 mx-auto flex flex-col justify-between gap-4">
 						<ul className="overflow-y-auto  px-4">
-							{messages.map((message, i) => (
+						{messages.map((message, i) => (
 								<li
 									key={i}
 									className={`my-6 flex ${
@@ -91,7 +88,7 @@ export default function ChatPage() {
 												? 'bg-gray-200 rounded-xl rounded-br-none'
 												: 'bg-slate-300 text-gray-900 rounded-xl rounded-bl-none'
 										}`}>
-										{message.content}
+											{message.content}
 									</p>
 								</li>
 							))}

@@ -1,26 +1,32 @@
-import { CoreMessage, CoreTool, CoreUserMessage, generateText } from "ai";
-import { RequestHandler } from "express";
-import { getDatabase } from "../../utils/mongodb";
-import { ObjectId } from "mongodb";
-import { Chat } from "../../types/Chat";
-import { ChatBot } from "../../types/ChatBot";
-import { aiPlugins } from "../../ai/plugins";
+import {
+	CoreAssistantMessage,
+	CoreMessage,
+	CoreTool,
+	CoreToolMessage,
+	CoreUserMessage,
+	generateText,
+	LanguageModelResponseMetadata,
+	LanguageModelUsage,
+	streamText,
+} from 'ai'
+import { RequestHandler } from 'express'
+import { getDatabase } from '../../utils/mongodb'
+import { ObjectId } from 'mongodb'
+import { Chat } from '../../types/Chat'
+import { ChatBot } from '../../types/ChatBot'
+import { aiPlugins } from '../../ai/plugins'
 import { openai } from '@ai-sdk/openai'
 
 const handleChat: RequestHandler<
 	{ chatId: string },
 	{},
-	{ messages: string[]; contactName?: string }
+	{ messages: CoreUserMessage[]; contactName?: string; stream: boolean }
 > = async (req, res) => {
 	try {
 		const { chatId } = req.params
-		const { messages: userMessages, contactName } = req.body
-		const messages: CoreUserMessage[] = userMessages.map((message) => {
-			return {
-				role: 'user',
-				content: message,
-			}
-		})
+		const { messages, contactName, stream } = req.body
+
+		console.log({messages})
 
 		const chatObjectId = new ObjectId(chatId)
 
@@ -51,12 +57,20 @@ const handleChat: RequestHandler<
 					tools[toolId] = tool
 				}
 
-				const { text } = await generateText({
+				const aiConfig = {
 					model: openai(model),
 					messages: conversation,
 					system: `${name} - ${initialPrompt},
 					${contactName && 'Acualmente estás ayudando a: ' + contactName}`,
-					onStepFinish: async ({ usage, response }) => {
+					onStepFinish: async ({
+						usage,
+						response,
+					}: {
+						usage: LanguageModelUsage
+						response: LanguageModelResponseMetadata & {
+							messages: Array<CoreAssistantMessage | CoreToolMessage>
+						}
+					}) => {
 						const { messages: aiMessages } = response
 
 						await chatCollection.updateOne(
@@ -75,11 +89,19 @@ const handleChat: RequestHandler<
 					},
 					tools,
 					maxSteps: 3,
-				})
+				}
 
-				res.json({
-					response: text,
-				})
+				if (stream) {
+					const result = streamText(aiConfig)
+
+					result.pipeDataStreamToResponse(res)
+				} else {
+					const { text } = await generateText(aiConfig)
+
+					res.json({
+						response: text,
+					})
+				}
 			}
 		} else {
 			res

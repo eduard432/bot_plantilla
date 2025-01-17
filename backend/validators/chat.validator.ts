@@ -12,8 +12,9 @@ export const chatSchema = {
         chatId: z.string()
     }),
     body: z.object({
-        messages: z.string().array(),
-        contactName: z.string().optional()
+        messages: z.string().array().or(z.any()),
+        contactName: z.string().optional(),
+        stream: z.boolean().optional().default(false)
     })
 }
 
