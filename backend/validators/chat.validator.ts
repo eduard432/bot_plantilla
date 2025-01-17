@@ -30,3 +30,9 @@ export const searchChatSchema = {
         userId: z.string()
     })
 }
+
+export const generateLinkSchema = {
+    params: z.object({
+        id: z.string()
+    })
+}

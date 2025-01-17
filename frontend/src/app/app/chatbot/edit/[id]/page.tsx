@@ -4,13 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ChatBotRecord } from '@/types/ChatBot'
 
-import {
-	FaRegTrashCan,
-	FaRegMessage,
-	FaRegSquarePlus,
-	FaCopy,
-	FaTrash,
-} from 'react-icons/fa6'
+import { FaRegMessage, FaCopy, FaTrash, FaLink } from 'react-icons/fa6'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import ForwardButton from '@/components/ForwardButton'
 import Connections from './Connections'
@@ -25,7 +19,7 @@ type InputData = {
 export default function EditPage() {
 	const params = useParams<{ id: string }>()
 	const [chatBot, setChatBot] = useState<ChatBotRecord>()
-	
+
 	const router = useRouter()
 
 	const handleGetData = async () => {
@@ -84,10 +78,6 @@ export default function EditPage() {
 		}
 	}
 
-	
-
-	
-
 	const handleDeleteData = async () => {
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}/chatbot/${chatBot?._id}`,
@@ -108,6 +98,12 @@ export default function EditPage() {
 					<h2 className="text-2xl font-semibold">Editar a: "{chatBot.name}"</h2>
 					<section className="w-1/2 mx-auto">
 						<div className="flex gap-1">
+							<a
+								target="_blank"
+								href={`${process.env.NEXT_PUBLIC_API_URL}/api/chat/link/${chatBot._id}`}
+								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
+								<FaLink /> Chat Link
+							</a>
 							<button
 								onClick={() => navigator.clipboard.writeText(chatBot._id)}
 								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
