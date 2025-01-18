@@ -1,7 +1,7 @@
 import { ChatGetInfo } from '@/types/Api'
 import { redirect, notFound } from 'next/navigation'
 import React from 'react'
-import Chat from './Chat'
+import Chat from '../../../components/Chat'
 
 interface ChatPageProps {
     params: {

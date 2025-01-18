@@ -2,16 +2,35 @@
 
 import { Message } from 'ai'
 import { useChat } from 'ai/react'
-import React, { KeyboardEventHandler } from 'react'
+import React, { Dispatch, KeyboardEventHandler, SetStateAction, useEffect } from 'react'
 import { FaPaperPlane } from 'react-icons/fa6'
 import ReactMarkdown from 'react-markdown'
 
-const Chat = ({ messages: initialMessages, id }: { messages: Message[]; id: string }) => {
-	const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-		api: `${process.env.NEXT_PUBLIC_API_URL}/chat/${id}`,
-		initialMessages: initialMessages,
-		body: { id, stream: true, allMessages: true },
-	})
+interface ChatProps {
+	messages: Message[]
+	id: string
+	clean?: boolean
+	setClean?: Dispatch<SetStateAction<boolean>>
+}
+
+const Chat = ({ messages: initialMessages, id, clean, setClean }: ChatProps) => {
+	const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } =
+		useChat({
+			api: `${process.env.NEXT_PUBLIC_API_URL}/chat/${id}`,
+			initialMessages: initialMessages,
+			body: { id, stream: true, allMessages: true },
+		})
+
+	const clearMessages = () => {
+		if (setClean) {
+			setMessages([])
+			setClean(false)
+		}
+	}
+
+	useEffect(() => {
+		if (clean) clearMessages()
+	}, [clean])
 
 	const handleSubmitKey: KeyboardEventHandler<HTMLTextAreaElement> = (event) => {
 		// Verifica si se presionaron Enter + Alt
@@ -25,7 +44,10 @@ const Chat = ({ messages: initialMessages, id }: { messages: Message[]; id: stri
 		<section className="rounded border h-full md:h-5/6 border-gray-300 p-4 w-full md:w-2/3 mx-auto flex flex-col justify-between gap-4 my-2">
 			<ul className="overflow-y-auto  px-4">
 				{messages.map((message, i) => {
-					if (message.role === 'user' || message.role === 'assistant' && message.content) {
+					if (
+						message.role === 'user' ||
+						(message.role === 'assistant' && message.content)
+					) {
 						return (
 							<li
 								key={i}
