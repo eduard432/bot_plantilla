@@ -111,9 +111,13 @@ export const handleDeleteChatbot: RequestHandler<{ id: string }> = async (req, r
 	const objectId = new ObjectId(id)
 
 	const db = getDatabase()
-	const collection = db.collection<ChatBot>('chatbot')
-	const result = await collection.deleteOne({ _id: objectId })
-	if (result) {
+	const chatBotCollection = db.collection<ChatBot>('chatbot')
+	const chatCollection = db.collection<Chat>('chat')
+
+	const chatBotResult = await chatBotCollection.deleteOne({ _id: objectId })
+	await chatCollection.deleteMany({chatBotId: objectId})
+
+	if (chatBotResult) {
 		res.json({
 			msg: 'Chatbot removed!!!',
 		})
