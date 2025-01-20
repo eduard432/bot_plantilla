@@ -7,7 +7,7 @@ type ConnectionsPageParams = {
 	setChatBot: Dispatch<SetStateAction<ChatBotRecord | undefined>>
 }
 
-const Functions = ({ chatBot, setChatBot }: ConnectionsPageParams) => {
+const Plugins = ({ chatBot, setChatBot }: ConnectionsPageParams) => {
 	const [funcs, setFuncs] = useState<string[]>([])
 	const [selectedFunc, setSelectedFunc] = useState<string>('')
 
@@ -110,4 +110,4 @@ const Functions = ({ chatBot, setChatBot }: ConnectionsPageParams) => {
 	)
 }
 
-export default Functions
+export default Plugins

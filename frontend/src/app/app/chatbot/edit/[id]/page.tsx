@@ -8,7 +8,7 @@ import { FaRegMessage, FaCopy, FaTrash, FaLink } from 'react-icons/fa6'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import ForwardButton from '@/components/ForwardButton'
 import Connections from './Connections'
-import Functions from './Functions'
+import Plugins from './Plugins'
 import Stats from './Stats'
 
 type InputData = {
@@ -112,7 +112,7 @@ export default function EditPage() {
 							<button
 								onClick={() => router.push(`/app/chat/${chatBot.defaultChatId}`)}
 								className="px-2 border border-gray-300 rounded text-sm flex gap-1 items-center">
-								<FaRegMessage /> Chat
+								<FaRegMessage />Admin Chat
 							</button>
 							<button
 								onClick={() => handleDeleteData()}
@@ -177,9 +177,10 @@ export default function EditPage() {
 								</button>
 							</div>
 						</form>
-						<hr />
-						<Connections chatBot={chatBot} setChatBot={setChatBot} />
-						<Functions chatBot={chatBot} setChatBot={setChatBot} />
+						<hr className="my-4" />
+						{/* <Connections chatBot={chatBot} setChatBot={setChatBot} /> */}
+						<Plugins chatBot={chatBot} setChatBot={setChatBot} />
+						<hr className="my-4" />
 						<Stats chatBot={chatBot} />
 					</section>
 				</>
