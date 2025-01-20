@@ -40,14 +40,11 @@ const Stats = ({ chatBot }: { chatBot: ChatBotRecord }) => {
 	}, [])
 
 	return (
-		<>
-			<h4 className="text-xl font-semibold my-2">Estadísticas:</h4>
 			<div className="my-4 flex gap-4">
 				<Stat value={stats[0]} name="Chats" />
 				<Stat value={stats[1]} name="Mensajes" />
 				<Stat value={chatBot.usedTokens} name="Tokens" />
 			</div>
-		</>
 	)
 }
 
