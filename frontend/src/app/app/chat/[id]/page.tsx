@@ -60,7 +60,7 @@ export default function ChatPage() {
 							</button>
 						</div>
 					</section>
-					<Chat id={chatInfo.chatBot._id} messages={chatInfo.messages} clean={clean} setClean={setClean} />
+					<Chat id={id} messages={chatInfo.messages} clean={clean} setClean={setClean} />
 				</>
 			)}
 		</main>
