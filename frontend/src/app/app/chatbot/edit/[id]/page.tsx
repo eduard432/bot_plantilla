@@ -10,6 +10,7 @@ import ForwardButton from '@/components/ForwardButton'
 import Connections from './Connections'
 import Plugins from './Plugins'
 import Stats from './Stats'
+import MDEditor from '@uiw/react-md-editor'
 
 type InputData = {
 	name: string
@@ -37,6 +38,8 @@ export default function EditPage() {
 	}, [])
 
 	const {
+		getValues,
+		setValue,
 		register,
 		handleSubmit,
 		reset,
@@ -154,11 +157,16 @@ export default function EditPage() {
 							</div>
 							<div className="flex flex-col gap-2">
 								<label htmlFor="initialPrompt">Mensaje Inicial:</label>
-								<textarea
+								<MDEditor
+									value={getValues().initialPrompt}
+									onChange={(value) => setValue('initialPrompt', value || '')}
+									className="outline-none border border-gray-300 rounded px-2 py-1"
+      							/>
+								{/* <textarea
 									{...register('initialPrompt', { required: true })}
 									className="outline-none border border-gray-300 rounded px-2 py-1"
 									rows={2}
-									name="initialPrompt"></textarea>
+									name="initialPrompt"></textarea> */}
 							</div>
 
 							<div className="flex space-x-2">
