@@ -19,6 +19,7 @@ import {
 	createChatbotSchema,
 	deleteChatbotSchema,
 	deleteConnectionSchema,
+	deletePluginSchema,
 	getChatbotSchema,
 	getStatsSchema,
 	updateChatbotsSchema,
@@ -40,7 +41,7 @@ router.post(
 
 router.get('/plugins', handleGetPlugins)
 router.post('/plugins', validate(addPluginSchema.body), handleAddPlugin)
-router.delete('/plugins', validate(deleteConnectionSchema.body), handleDeletePlugin)
+router.delete('/plugins', validate(deletePluginSchema.body), handleDeletePlugin)
 
 router.post('/', validate(createChatbotSchema.body), handleCreateChatBot)
 router.get('/all', handleGetChatbots)

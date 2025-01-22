@@ -53,9 +53,9 @@ export const updateChatbotsSchema = {
         id: z.string()
     }),
     body: z.object({
-        model: z.string(),
-        name: z.string(),
-        initialPrompt: z.string()
+        model: z.string().optional(),
+        name: z.string().optional(),
+        initialPrompt: z.string().optional()
     }).optional()
 }
 
